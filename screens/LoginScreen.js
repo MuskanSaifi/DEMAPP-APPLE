@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image
 } from 'react-native';
 import { CountryPicker } from 'react-native-country-codes-picker';
 import axios from 'axios';
@@ -99,6 +100,12 @@ export default function LoginScreen() {
 return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
+       <Image
+  source={require('../assets/company_logo.png')} // ✅ Correct for local image
+  style={styles.productImage}
+  resizeMode="contain"
+/>
+
         <Text style={styles.title}>Welcome Back 👋</Text>
         <Text style={styles.subtitle}>Login to continue</Text>
 
@@ -161,18 +168,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#F0F4FF',
+    backgroundColor: '#FFF',
   },
   formContainer: {
     backgroundColor: '#fff',
     padding: 25,
     borderRadius: 16,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
   },
+  productImage: {
+  width: '80',
+  height: '80',
+  alignSelf: 'center',
+},
   title: {
     fontSize: 28,
     fontWeight: 'bold',

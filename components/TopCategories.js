@@ -131,13 +131,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heading: {
-    fontSize: 18, // Slightly larger heading
+    fontSize: 15, // Slightly larger heading
     fontWeight: 'bold',
     color: '#333',
   },
   viewAllText: {
     fontSize: 14,
-    color: '#007bff',
+    color: '#5110b1ff',
     fontWeight: '500', // Added font weight
   },
   container: {
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     width: ITEM_WIDTH,
     alignItems: 'center',
     backgroundColor: '#ffffff', // Keep item background white
-    borderRadius: 12,
+    borderRadius: 10,
     paddingVertical: 8, // Increased padding for better appearance
     paddingHorizontal: 4,
     elevation: 3,
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   name: {
-    fontSize: 12, // Adjusted font size
+    fontSize: 11, // Adjusted font size
     textAlign: 'center',
     color: '#444',
     marginTop: 0, // Adjusted margin

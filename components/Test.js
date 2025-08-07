@@ -1,97 +1,179 @@
+// SellerProductsScreen.js
 import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
-  Linking,
-  Platform,
-  LayoutAnimation,
-  UIManager,
   Dimensions,
   FlatList,
-  StatusBar,
-  Alert,
+  Platform,
+  UIManager,
   Animated,
+  StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useDispatch, useSelector } from 'react-redux';
+import { addProductToWishlist, removeProductFromWishlist } from '../redux/wishlistSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchBarWithSuggestions from '../components/SearchBar';
-import Buyfrom from "../components/BuyForm";
+import Buyfrom from "../components/BuyForm"; 
 import BottomTabs from '../components/BottomTabs';
 import Sidebar from "../components/Sidebar";
 
-// Redux imports
-import { useSelector, useDispatch } from "react-redux";
-import { addProductToWishlist, removeProductFromWishlist, fetchUserWishlist } from '../redux/wishlistSlice';
-
 const { width } = Dimensions.get("window");
+const isDesktop = width > 768;
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Subcategory Slider Component
-const SubcategorySlider = ({ subcategories, onItemPress }) => {
-  if (!subcategories || subcategories.length === 0) {
-    return (
-      <View style={styles.noSubcategoriesContainer}>
-        <Text style={styles.noSubcategoriesText}>No subcategories available.</Text>
-      </View>
-    );
-  }
+const decodeSlugForComparison = (str) => decodeURIComponent(str || '').toLowerCase();
+const formatSlugForDisplay = (str) => decodeSlugForComparison(str).replace(/-/g, ' ');
 
-  const renderSubcategoryItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.subcategoryItem}
-      onPress={() => onItemPress(item)}
-      activeOpacity={0.8}
-    >
-      <Image
-        source={{ uri: item.icon || 'https://via.placeholder.com/80/E0E0E0/000000?text=Subcat' }}
-        style={styles.subcategoryImage}
-        resizeMode="cover"
-      />
-      <Text style={styles.subcategoryName} numberOfLines={1}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+// --- New dedicated components for better readability ---
+const SubcategoryList = ({ subcategories, loading, routeSubcategorySlug, handleSubcategoryNav }) => {
+  if (subcategories.length === 0 && !loading) return null;
+
+  const renderItem = ({ item, index }) => {
+    const isActive = decodeSlugForComparison(item.subcategoryslug) === decodeSlugForComparison(routeSubcategorySlug);
+    
+    if (loading) {
+      return <View style={styles.subcategoryItemSkeleton} />;
+    }
+    
+    return (
+      <TouchableOpacity
+        style={[styles.subcategoryItem, isActive && styles.subcategoryItemActive]}
+        onPress={() => handleSubcategoryNav(item)}
+      >
+          <Image
+              source={{ uri: item.icon || 'https://via.placeholder.com/80/E0E0E0/000000?text=Subcat' }}
+              style={[styles.subcategoryImage, isActive && styles.subcategoryImageActive]}
+              resizeMode="cover"
+            />
+        <Text style={[styles.subcategoryName, isActive && styles.subcategoryItemTextActive]}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <View style={styles.subcategorySliderContainer}>
-      <Text style={styles.subcategorySliderTitle}>Browse Subcategories</Text>
+    <View style={styles.subcategoriesContainer}>
+      <Text style={styles.subcategoriesTitle}>Subcategories</Text>
       <FlatList
         horizontal
-        data={subcategories}
-        keyExtractor={(item) => item._id || item.name}
-        renderItem={renderSubcategoryItem}
+        data={loading ? Array(5).fill({}) : subcategories}
+        keyExtractor={(item, index) => item._id || `skeleton-${index}`}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.subcategoryListContent}
+        contentContainerStyle={styles.subcategoriesList}
+        renderItem={renderItem}
       />
     </View>
   );
 };
 
-const ProductsScreen = () => {
+const ProductCard = React.memo(({ item, handleProductPress, handleWishlistToggle, isProductInWishlist, handleCompanyProfileNav }) => {
+  const shouldDisplay = (value) => {
+    if (value === null || typeof value === 'undefined') return false;
+    if (typeof value === 'string' && (value.trim() === '' || value.trim().toLowerCase() === 'n/a')) return false;
+    if (Array.isArray(value) && value.length === 0) return false;
+    return true;
+  };
+  
+  const productPrice = item.tradeShopping?.fixedSellingPrice || item.price;
+  const productImageUrl = item.images?.[0]?.url || "https://via.placeholder.com/300/F0F0F0/000000?text=Product";
+  
+  const formattedDescription = item.description ? item.description.split(" ").slice(0, 15).join(" ") + (item.description.split(" ").length > 15 ? "..." : "") : '';
+
+  return (
+    <View style={styles.productCard}>
+      <TouchableOpacity onPress={() => handleProductPress(item)} style={styles.productImageWrapper}>
+        <Image source={{ uri: productImageUrl }} style={styles.productImage} resizeMode="contain" />
+        <TouchableOpacity style={styles.wishlistButton} onPress={() => handleWishlistToggle(item._id)}>
+          <Ionicons name={isProductInWishlist ? 'heart' : 'heart-outline'} size={24} color={isProductInWishlist ? '#E74C3C' : '#333'} />
+        </TouchableOpacity>
+      </TouchableOpacity>
+
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
+        {shouldDisplay(item.description) && (
+          <Text style={styles.productDescription} numberOfLines={2}>{formattedDescription}</Text>
+        )}
+
+        {item.businessProfile && shouldDisplay(item.businessProfile.companyName) && (
+          <View style={styles.companyInfo}>
+            <TouchableOpacity onPress={() => handleCompanyProfileNav(item.userId?._id)}>
+              <Text style={styles.companyNameText}>{item.businessProfile.companyName}</Text>
+            </TouchableOpacity>
+            <View style={styles.companyMetaRow}>
+              {shouldDisplay(item.businessProfile.city) && (
+                <View style={styles.companyMetaItem}>
+                  <Ionicons name="location-sharp" size={14} color="#888" style={{ marginRight: 4 }} />
+                  <Text style={styles.companyMetaText}>{item.businessProfile.city}</Text>
+                </View>
+              )}
+              {shouldDisplay(item.businessProfile.gstNumber) && (
+                <View style={styles.companyMetaItem}>
+                  <Ionicons name="checkmark-circle" size={14} color="#2ECC71" style={{ marginRight: 4 }} />
+                  <Text style={styles.companyMetaTextSuccess}>GST</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        <View style={styles.priceAndMOQ}>
+          {shouldDisplay(productPrice) && (
+            <View style={styles.priceContainer}>
+              <Text style={styles.priceLabel}>Price:</Text>
+              <Text style={styles.priceValue}>₹{productPrice} {item.currency || "INR"}</Text>
+            </View>
+          )}
+          {shouldDisplay(item.minimumOrderQuantity) && (
+            <View style={styles.moqContainer}>
+              <Text style={styles.moqLabel}>MOQ:</Text>
+              <Text style={styles.moqValue}>{item.minimumOrderQuantity}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.bottomButtonsContainer}>
+          <Buyfrom product={item} sellerId={item?.userId?._id} />
+          <TouchableOpacity 
+            style={styles.productDetailsButton} 
+            onPress={() => handleProductPress(item)}
+          >
+            <Text style={styles.productDetailsButtonText}>Product Details</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+});
+
+// Main Component
+const SellerProductsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { productslug } = route.params || {};
-
-  // Redux hooks
   const dispatch = useDispatch();
-  const wishlistItems = useSelector((state) => state.wishlist.items);
-  const wishlistLoading = useSelector((state) => state.wishlist.loading);
+  const { items: wishlistItems } = useSelector(state => state.wishlist);
+
+  const { categorySlug: routeCategorySlug, subcategorySlug: routeSubcategorySlug } = route.params || {};
 
   const [products, setProducts] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [businessProfile, setBusinessProfile] = useState(null);
-  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentCategoryName, setCurrentCategoryName] = useState("");
+  const [currentSubcategoryName, setCurrentSubcategoryName] = useState("");
 
-  // State and ref for sidebar
+  // ===========================================
+  // === State and functions for the Sidebar ===
+  // ===========================================
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const sidebarX = useRef(new Animated.Value(-width * 0.8)).current;
 
@@ -105,264 +187,136 @@ const ProductsScreen = () => {
       setSidebarVisible(!sidebarVisible);
     });
   };
+  // ===========================================
+  // ===========================================
 
   useEffect(() => {
-    // Fetch wishlist and product data
-    dispatch(fetchUserWishlist());
+    const fetchData = async () => {
+      if (!routeCategorySlug || !routeSubcategorySlug) {
+        setLoading(false);
+        setError("Category or subcategory slug is missing.");
+        return;
+      }
 
-    if (!productslug) {
-      setLoading(false);
-      setError("Product slug is missing.");
-      return;
-    }
-
-    const fetchProductData = async () => {
-      setLoading(true);
-      setError(null);
       try {
-        const encodedSlug = encodeURIComponent(productslug);
-        const response = await fetch(`https://www.dialexportmart.com/api/manufacturers/${encodedSlug}`);
+        setLoading(true);
+        setError(null);
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch product data: ${response.status}`);
+        const res = await fetch(`https://www.dialexportmart.com/api/adminprofile/category`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch categories: ${res.statusText}`);
         }
-        const data = await response.json();
+        const data = await res.json();
 
-        setProducts(data.products || []);
-        setSubcategories(data.subcategories || []);
-        setBusinessProfile(data.businessProfile || null);
-        setRelatedProducts(data.relatedProducts || []);
+        const decodedRouteCategorySlug = decodeSlugForComparison(routeCategorySlug);
+        const decodedRouteSubcategorySlug = decodeSlugForComparison(routeSubcategorySlug);
 
+        const foundCategory = data.find(
+          (cat) => cat.categoryslug && decodeSlugForComparison(cat.categoryslug) === decodedRouteCategorySlug
+        );
+
+        if (!foundCategory) {
+          throw new Error(`Category not found for slug: ${routeCategorySlug}`);
+        }
+
+        setCurrentCategoryName(foundCategory.name);
+        setSubcategories(foundCategory.subcategories || []);
+
+        const foundSubcat = (foundCategory.subcategories || []).find(
+          (sub) => sub.subcategoryslug && decodeSlugForComparison(sub.subcategoryslug) === decodedRouteSubcategorySlug
+        );
+
+        if (!foundSubcat) {
+          throw new Error(`Subcategory not found for slug: ${routeSubcategorySlug}`);
+        }
+
+        setCurrentSubcategoryName(foundSubcat.name);
+        setProducts(foundSubcat.products || []);
       } catch (err) {
-        console.error("Error fetching product:", err?.message || err);
-        setError("Could not load product details.");
+        console.error("Error fetching data:", err);
+        setError(err.message || "Could not load products for this subcategory.");
         setProducts([]);
+        setSubcategories([]);
+        setCurrentCategoryName("");
+        setCurrentSubcategoryName("");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchProductData();
-  }, [productslug, dispatch]);
+    fetchData();
+  }, [routeCategorySlug, routeSubcategorySlug]);
 
   useLayoutEffect(() => {
     StatusBar.setBarStyle('dark-content', true);
     if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor('#F6F9FF');
+        StatusBar.setBackgroundColor('#F6F9FF');
     }
     navigation.setOptions({
-      headerShown: false,
+        headerShown: false,
     });
-  }, [navigation]);
+  }, [navigation, currentSubcategoryName]);
 
-  const handleSubcategoryPress = (subcategory) => {
-    navigation.navigate("SellerProductsScreen", {
-      categorySlug: subcategory?.category?.categoryslug,
-      subcategorySlug: subcategory?.subcategoryslug,
-    });
-  };
-
-  const handleRelatedProductPress = (product) => {
-    navigation.push("ProductsScreen", { productslug: product.productslug });
-  };
-  
-  // This is the core function for toggling wishlist status
-  const toggleWishlist = (product) => {
-    // Check if the product is already in the wishlist using the product's _id
-    const isWishlisted = wishlistItems.some(item => item._id === product._id);
-    
-    if (isWishlisted) {
-      // If it's wishlisted, remove it
-      dispatch(removeProductFromWishlist(product._id));
+  const handleProductPress = (product) => {
+    const productId = product._id || product.productslug;
+    if (productId) {
+      navigation.navigate("ProductDetail", { productId: productId });
     } else {
-      // If it's not, add it.
-      dispatch(addProductToWishlist(product));
+      console.warn("Cannot navigate to product detail, no ID found for product:", product.name || 'Unknown Product');
     }
   };
 
-  const renderRelatedProductItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.relatedProductItem}
-      onPress={() => handleRelatedProductPress(item)}
-      activeOpacity={0.8}
-    >
-      <Image
-        source={{
-          uri: item.images?.[0]?.url || item.images?.[0] || 'https://via.placeholder.com/80/E0E0E0/000000?text=Related',
-        }}
-        style={styles.relatedProductImage}
-        resizeMode="contain"
+  const handleSubcategoryNav = (sub) => {
+    if (routeCategorySlug && sub.subcategoryslug) {
+      navigation.replace("SellerProductsScreen", {
+        categorySlug: routeCategorySlug,
+        subcategorySlug: sub.subcategoryslug,
+      });
+    } else {
+      console.error("Cannot navigate to subcategory, missing slugs:", { routeCategorySlug, subcategoryslug: sub.subcategoryslug });
+    }
+  };
+
+  const handleCompanyProfileNav = (userId) => {
+    if (userId) {
+      navigation.navigate("CompanyProfileScreen", { userId: userId });
+    } else {
+      console.warn("User ID not available for company profile navigation.");
+    }
+  };
+  
+  const handleWishlistToggle = (productId) => {
+    const isProductInWishlist = wishlistItems.some(
+      (item) => item._id === productId || (item.product && item.product._id === productId)
+    );
+    if (isProductInWishlist) {
+      dispatch(removeProductFromWishlist(productId));
+    } else {
+      dispatch(addProductToWishlist(productId));
+    }
+  };
+
+  const renderHeader = () => (
+    <View>
+      <SubcategoryList
+        subcategories={subcategories}
+        loading={loading}
+        routeSubcategorySlug={routeSubcategorySlug}
+        handleSubcategoryNav={handleSubcategoryNav}
       />
-      <Text style={styles.relatedProductName} numberOfLines={2}>
-        {item.name || 'No name available'}
-      </Text>
-    </TouchableOpacity>
+    </View>
   );
 
-  const handleContactSeller = () => {
-    Alert.alert("Contact Seller", "This would initiate contact with the seller, e.g., via call, email, or an inquiry form.");
-  };
+  const renderEmptyComponent = () => (
+    <View style={styles.noProductsContainer}>
+      <Ionicons name="sad-outline" size={50} color="#95A5A6" />
+      <Text style={styles.noProductsText}>No products found in this subcategory.</Text>
+    </View>
+  );
 
-  const renderProductItem = ({ item: product }) => {
-    // Correctly check if the product is in the wishlist
-    const isWishlisted = wishlistItems.some(item => item._id === product._id);
-    
-    // Fallback for image URI to handle different API response formats
-    const imageUri = product?.images?.[0]?.url || product?.images?.[0] || "https://via.placeholder.com/300/F0F0F0/000000?text=Product+Image";
-    console.log('Rendering product:', product.name, 'with image URI:', imageUri);
-
-    return (
-      <View style={styles.productInfoCard}>
-        <View style={styles.imageCard}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("ProductDetail", {
-                productId: product._id,
-                productslug: product.productslug,
-              });
-            }}
-          >
-            <Image
-              source={{ uri: imageUri }}
-              style={styles.productImage}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-          {/* Wishlist Button */}
-          <TouchableOpacity
-            style={styles.wishlistButton}
-            onPress={() => toggleWishlist(product)}
-          >
-            <Ionicons
-              name={isWishlisted ? "heart" : "heart-outline"}
-              size={24}
-              color={isWishlisted ? "#FF6347" : "#888"}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("ProductDetail", {
-              productId: product._id,
-              productslug: product.productslug,
-            });
-          }}
-        >
-          <Text style={styles.productTitle}>{product.name}</Text>
-        </TouchableOpacity>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Price:</Text>
-          <Text style={styles.infoValue}>
-            ₹{product.price} {product.currency || "INR"}
-          </Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>MOQ:</Text>
-          <Text style={styles.infoValue}>
-            {product.minimumOrderQuantity || "N/A"} {product.moqUnit || "Number"}
-          </Text>
-        </View>
-
-        {product.description && (
-          <Text style={styles.productDescription}>
-            {product.description.length > 120
-              ? `${product.description.slice(0, 260)}...`
-              : product.description}
-          </Text>
-        )}
-
-        {businessProfile && (
-          <View style={styles.businessProfileSection}>
-            <View style={styles.companyRow}>
-              <Ionicons name="business-outline" size={16} color="#007bff" style={styles.iconStyle} />
-              <Text style={styles.companyNameText}>{businessProfile.companyName}</Text>
-            </View>
-
-            <View style={styles.badgesWrapper}>
-              {businessProfile.yearOfEstablishment && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>🏢 Est. {businessProfile.yearOfEstablishment}</Text>
-                </View>
-              )}
-              {product?.tradeShopping?.gst && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>✅ GST: {product.tradeShopping.gst}%</Text>
-                </View>
-              )}
-              <View style={[styles.badge, product.tradeShopping.isReturnable ? styles.returnableYes : styles.returnableNo]}>
-                <Text style={styles.badgeText}>
-                  🔁 Returnable: {product.tradeShopping.isReturnable ? "Yes" : "No"}
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity style={styles.contactSellerButton} onPress={handleContactSeller}>
-            <Buyfrom product={product} sellerId={product?.userId} />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-
-  if (loading || wishlistLoading) {
-    return (
-      <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
-        <View style={styles.searchBarWrapper}>
-          <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
-        </View>
-        <View style={[styles.centeredContainer, { paddingTop: 50 }]}>
-          <ActivityIndicator size="large" color="#6D4AAE" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-        <View style={styles.bottomTabsContainer}>
-          <BottomTabs />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (error) {
-    return (
-      <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
-        <View style={styles.searchBarWrapper}>
-          <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
-        </View>
-        <View style={[styles.centeredContainer, { paddingTop: 50 }]}>
-          <Ionicons name="alert-circle-outline" size={50} color="#FF6347" style={{ marginBottom: 10 }} />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-        <View style={styles.bottomTabsContainer}>
-          <BottomTabs />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (products.length === 0) {
-    return (
-      <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
-        <View style={styles.searchBarWrapper}>
-          <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
-        </View>
-        <View style={[styles.centeredContainer, { paddingTop: 50 }]}>
-          <Ionicons name="information-circle-outline" size={50} color="#888" style={{ marginBottom: 10 }} />
-          <Text style={styles.errorText}>No products found for this slug.</Text>
-        </View>
-        <View style={styles.bottomTabsContainer}>
-          <BottomTabs />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
+  // --- Main rendering logic with new components ---
   return (
     <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
+      {/* Sidebar and Backdrop */}
       <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
         <Sidebar
           activeScreen={null}
@@ -376,47 +330,50 @@ const ProductsScreen = () => {
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
       )}
       
+      {/* SearchBar */}
       <View style={styles.searchBarWrapper}>
         <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
       </View>
 
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item._id}
-        renderItem={renderProductItem}
-        ListHeaderComponent={() => (
-          <>
-            <SubcategorySlider
-              subcategories={subcategories}
-              onItemPress={handleSubcategoryPress}
-            />
-          </>
-        )}
-        ListFooterComponent={() => (
-          <View>
-            {relatedProducts && relatedProducts.length > 0 && (
-              <View style={styles.relatedProductsSection}>
-                <Text style={styles.relatedProductsTitle}>Related Products</Text>
-                <FlatList
-                  horizontal
-                  data={relatedProducts}
-                  keyExtractor={(item, index) => `${item._id || item.productslug || 'related'}-${index}`}
-                  renderItem={renderRelatedProductItem}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.relatedProductsListContent}
-                />
-              </View>
-            )}
-            {(!relatedProducts || relatedProducts.length === 0) && (
-              <View style={styles.noRelatedProductsContainer}>
-                <Text style={styles.noRelatedProductsText}>No related products available.</Text>
-              </View>
-            )}
-            <View style={{ height: 70 }} />
-          </View>
-        )}
-        contentContainerStyle={styles.contentContainer}
-      />
+      {/* Main Content (conditionally rendered) */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6D4AAE" />
+        </View>
+      ) : error ? (
+        <View style={styles.centeredContainer}>
+          <Ionicons name="alert-circle-outline" size={50} color="#FF6347" style={{ marginBottom: 10 }} />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+            <Text style={{ color: '#6D4AAE' }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item._id}
+          numColumns={isDesktop ? 2 : 1}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmptyComponent}
+          contentContainerStyle={styles.flatListContent}
+          renderItem={({ item }) => {
+            const isProductInWishlist = wishlistItems.some(
+              (wishlistItem) => wishlistItem._id === item._id || (wishlistItem.product && wishlistItem.product._id === item._id)
+            );
+            return (
+              <ProductCard
+                item={item}
+                handleProductPress={handleProductPress}
+                handleWishlistToggle={handleWishlistToggle}
+                isProductInWishlist={isProductInWishlist}
+                handleCompanyProfileNav={handleCompanyProfileNav}
+              />
+            );
+          }}
+        />
+      )}
+      
+      {/* BottomTabs (always visible) */}
       <View style={styles.bottomTabsContainer}>
         <BottomTabs />
       </View>
@@ -424,154 +381,97 @@ const ProductsScreen = () => {
   );
 };
 
+// --- SKELETON COMPONENTS ---
+const ProductSkeleton = () => (
+  <View style={styles.productCardSkeleton}>
+    <View style={styles.productImageSkeleton} />
+    <View style={styles.productInfoSkeleton}>
+      <View style={styles.productNameSkeleton} />
+      <View style={styles.productDescSkeleton} />
+      <View style={styles.companyInfoSkeleton} />
+      <View style={styles.priceAndMOQSkeleton} />
+      <View style={styles.buttonSkeleton} />
+    </View>
+  </View>
+);
+
 const styles = StyleSheet.create({
-   safeAreaContainer: {
+  safeAreaContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F6F9FF',
   },
   searchBarWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
     zIndex: 10,
-    backgroundColor: '#fff',
-    paddingVertical: 0,
-    paddingHorizontal: 16,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.07,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
   },
-   sidebar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width * 0.8,
-height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
-    zIndex: 999,
-    elevation: 5,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 2, height: 0 },
-    shadowRadius: 5,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: width * 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 998,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-  },
-businessProfileSection: {
-  marginVertical: 10,
-  padding: 12,
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.1,
-  shadowRadius: 3,
-  elevation: 2,
-},
-
-companyRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 6,
-},
-
-companyNameText: {
-  fontSize: 11,
-  fontWeight: "600",
-  color: "#333",
-  marginLeft: 6,
-},
-
-badgesWrapper: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 3,
-},
-
-badge: {
-  backgroundColor: "#e9f5ff",
-  paddingVertical: 5,
-  paddingHorizontal: 5,
-  borderRadius: 20,
-  marginRight: 6,
-  marginBottom: 2,
-},
-
-returnableYes: {
-  backgroundColor: "#e6f4ea",
-},
-
-returnableNo: {
-  backgroundColor: "#ffe5e5",
-},
-
-badgeText: {
-  fontSize: 10,
-  fontWeight: "600",
-  color: "#333",
-},
-
-productInfoCard: {
- width: '95%', // Takes full width of the FlatList container
- marginVertical: 8, // Adds vertical space between cards
- marginHorizontal: 8,
- backgroundColor: '#fff',
- borderRadius: 10,
- padding: 10, // Increased padding for better spacing inside the card
- shadowColor: '#000',
- shadowOpacity: 0.1,
- shadowOffset: { width: 0, height: 1 },
- shadowRadius: 3,
- },
-
   centeredContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F0F2F5",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#6D4AAE",
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   errorText: {
-    fontSize: 18,
-    color: "#FF6347",
-    textAlign: "center",
-    marginHorizontal: 20,
+    fontSize: 16,
+    color: '#FF6347',
+    textAlign: 'center',
   },
-  // Subcategory Slider Styles
-  subcategorySliderContainer: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginTop: 70,
+  goBackButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
   },
-  subcategorySliderTitle: {
-  fontWeight: 'bold',
-  fontSize: 14,
-  marginTop: 5,
-  marginBottom: 8,
-  color: '#333',
+  flatListContent: {
+    padding: 10,
+    paddingBottom: 70, // To make space for the BottomTabs
   },
-  subcategoryListContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 5,
+  productCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    margin: 5,
+    overflow: 'hidden',
+    flexDirection: 'row',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: isDesktop ? (width / 2) - 15 : width - 20,
+  },
+  subcategoriesContainer: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    backgroundColor: '#F9F9F9',
+  },
+  subcategoriesTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    paddingHorizontal: 15,
+    marginBottom: 8,
+  },
+  subcategoriesList: {
+    paddingHorizontal: 15,
+    paddingRight: 30, // For better scroll experience
   },
   subcategoryItem: {
-    alignItems: "center",
+    alignItems: 'center',
     marginHorizontal: 8,
     width: 60,
+  },
+  subcategoryItemActive: {
+    borderColor: '#6D4AAE',
   },
   subcategoryImage: {
     width: 70,
@@ -581,227 +481,259 @@ productInfoCard: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
   },
+  subcategoryImageActive: {
+    borderWidth: 1,
+    borderColor: '#6D4AAE',
+  },
   subcategoryName: {
     fontSize: 10,
-    color: "#555",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  noSubcategoriesContainer: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
-  },
-  noSubcategoriesText: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-  },
-  // Existing Styles (adapted for FlatList structure)
-  productImage: {
-    width: '100%', // Make image take full width of its container
-    height: 150, // Fixed height for consistency
-    borderRadius: 8,
-    resizeMode: 'contain',
-  },
-  imageCard: {
-    width: '100%', // Ensure image card takes full width
-    backgroundColor: "#F8F8F8",
-    borderRadius: 8,
-    padding: 5, // Reduced padding
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10, // Reduced margin
-  },
-  productTitle: {
-    fontSize: 13, // Adjusted font size for grid
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8, // Reduced margin
+    color: '#555',
+    fontWeight: '500',
     textAlign: 'center',
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 3, // Reduced margin
+  subcategoryItemTextActive: {
+    color: '#6D4AAE',
+    fontWeight: '600',
   },
-  infoLabel: {
-    fontSize: 11, // Adjusted font size
-    fontWeight: "500",
-    color: "#555",
+  subcategoryItemSkeleton: {
+    width: 100,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: '#E0E0E0',
+    marginRight: 10,
   },
-  infoValue: {
-    fontSize: 11, // Adjusted font size
-    color: "#333",
+  productImageWrapper: {
+    width: '100%',
+    height: isDesktop ? 200 : 180,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    overflow: 'hidden',
+  },
+  productImage: {
+    width: "100%",
+    height: "100%",
+  },
+  productInfo: {
+    padding: 15,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2C3E50",
+    marginBottom: 4,
   },
   productDescription: {
-    fontSize: 10, // Adjusted font size
-    color: "#666",
-    lineHeight: 13,
-    marginTop: 6,
+    fontSize: 13,
+    color: "#7F8C8D",
+    marginBottom: 10,
   },
-  businessProfileSection: {
+  companyInfo: {
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
-    paddingTop: 10, // Reduced padding
-    marginTop: 10, // Reduced margin
+    borderTopColor: '#EBEFF2',
+    marginBottom: 10,
   },
-  businessProfileTextBold: {
-    fontSize: 12, // Adjusted font size
-    fontWeight: 'bold',
-    color: '#444',
-    marginBottom: 1,
-  },
-  businessProfileText: {
-    fontSize: 12, // Adjusted font size
-    color: '#666',
-    marginBottom: 3,
-  },
-  tradeShoppingSection: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  tradeShoppingText: {
-    fontSize: 11, // Adjusted font size
-    color: '#666',
-    marginBottom: 2,
-  },
-  tradeShoppingTextBold: {
-    fontWeight: 'bold',
-    color: '#444',
-  },
-actionButtonsContainer: {
-  flexDirection: "column", // 🔁 Change from "row" to "column"
-  gap: 10, // Add vertical spacing between buttons
-  marginTop: 15,
-  paddingTop: 10,
-  borderTopWidth: 1,
-  borderTopColor: '#eee',
-},
-
-moreDetailsButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "#007bff",
-  paddingVertical: 11,
-  paddingHorizontal: 1,
-  borderRadius: 12,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.15,
-  shadowRadius: 2,
-  elevation: 3,
-},
-
-contactSellerButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: 20,
-  paddingVertical: 1,
-  paddingHorizontal: 1,
-},
-  moreDetailsButtonText: {
-    color: "#fff",
+  companyNameText: {
+    fontSize: 14,
     fontWeight: '600',
-    fontSize: 13, // Adjusted font size
+    color: '#3498DB',
   },
-  iconStyle: {
-    marginRight: 5, // Reduced margin
-    fontSize: 16, // Adjusted icon size
+  companyMetaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 5,
   },
-  relatedProductsSection: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginBottom:40,
-    borderRadius: 12,
-  },
-  relatedProductsTitle: {
-    fontWeight: 'bold',
-  fontSize: 14,
-  marginTop: 15,
-  marginBottom: 8,
-  color: '#333',
-  },
-  relatedProductsListContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 5,
-  },
-  relatedProductItem: {
-   alignItems: "center",
-    marginHorizontal: 8,
-    width: 60,
-  },
-  relatedProductImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  relatedProductName: {
-  fontSize: 10,
-    color: "#555",
-    fontWeight: "500",
-    textAlign: "center",
-  },
-  noRelatedProductsContainer: {
-    backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
+  companyMetaItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 15,
+  },
+  companyMetaText: {
+    fontSize: 12,
+    color: '#7F8C8D',
+  },
+  companyMetaTextSuccess: {
+    fontSize: 12,
+    color: '#2ECC71',
+    fontWeight: '600',
+  },
+  priceAndMOQ: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  priceContainer: {
+    flex: 1,
+    marginRight: 5,
+    backgroundColor: '#ECF0F1',
+    borderRadius: 8,
+    padding: 8,
+  },
+  priceLabel: {
+    fontSize: 12,
+    color: '#7F8C8D',
+  },
+  priceValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginTop: 2,
+  },
+  moqContainer: {
+    flex: 1,
+    marginLeft: 5,
+    backgroundColor: '#ECF0F1',
+    borderRadius: 8,
+    padding: 8,
+  },
+  moqLabel: {
+    fontSize: 12,
+    color: '#7F8C8D',
+  },
+  moqValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginTop: 2,
+  },
+  noProductsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 30,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginTop: 20,
+    marginHorizontal: 10,
     ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+      android: { elevation: 3 },
     }),
   },
-  noRelatedProductsText: {
-    fontSize: 14,
-    color: "#888",
+  noProductsText: {
+    fontSize: 16,
+    color: "#7F8C8D",
+    marginTop: 10,
+    textAlign: 'center',
   },
- bottomTabsContainer: {
-    position: 'absolute', // Use 'absolute' for fixed positioning
+  bottomTabsContainer: {
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: 70, // Consistent height
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    elevation: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: -2 },
-    shadowRadius: 8,
+    zIndex: 20,
   },
-
+  sidebar: {
+    position: 'absolute',
+    width: width * 0.8,
+    height: '100%',
+    backgroundColor: '#fff',
+    zIndex: 100,
+    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 2, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+      },
+    }),
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 99,
+  },
+  wishlistButton: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 20,
+    padding: 5,
+  },
+  bottomButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  productDetailsButton: {
+    backgroundColor: '#fff',
+    borderColor: '#6D4AAE',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'center',
+  },
+  productDetailsButtonText: {
+    color: '#6D4AAE',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  productCardSkeleton: {
+    width: isDesktop ? (width / 2) - 30 : width - 20,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    margin: 8,
+    ...Platform.select({
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+      android: { elevation: 3 },
+    }),
+    overflow: 'hidden',
+  },
+  productImageSkeleton: {
+    width: '100%',
+    height: isDesktop ? 200 : 180,
+    backgroundColor: '#E0E0E0',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+  },
+  productInfoSkeleton: {
+    padding: 15,
+  },
+  productNameSkeleton: {
+    width: '80%',
+    height: 20,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  productDescSkeleton: {
+    width: '90%',
+    height: 40,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  companyInfoSkeleton: {
+    width: '70%',
+    height: 16,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 4,
+    marginBottom: 5,
+  },
+  priceAndMOQSkeleton: {
+    width: '100%',
+    height: 30,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  buttonSkeleton: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 8,
+    marginTop: 10,
+  },
 });
 
-export default ProductsScreen;
+export default SellerProductsScreen;

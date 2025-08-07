@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57668474515",
+    "project_id": "dial-export-mart",
+    "storage_bucket": "dial-export-mart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57668474515:android:ce1933d5e79a191f889f66",
+        "android_client_info": {
+          "package_name": "com.nazim_saifi.dialexportmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4hqraBXlw6k6azY3mPvrQNeeWNEomYRo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

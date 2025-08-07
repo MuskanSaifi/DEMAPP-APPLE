@@ -7,8 +7,11 @@
     "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "cli": {
+      "appVersionSource": "remote"
+    },
     "splash": {
-      "image": "./assets/splash.png", 
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -19,8 +22,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive_icon_foreground.png", 
-        "backgroundColor": "#FFFFFF" 
+        "foregroundImage": "./assets/adaptive_icon_foreground.png",
+        "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.nazim_saifi.dialexportmart"
@@ -32,6 +35,7 @@
       "eas": {
         "projectId": "143f7135-2082-4a8c-8454-03cd3734c9fd"
       }
-    }
+    },
+    "owner": "nazim_saifi"
   }
 }

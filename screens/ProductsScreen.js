@@ -1,3 +1,4 @@
+// ProductsScreen.js
 import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import {
   View,
@@ -6,9 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
-  Linking,
   Platform,
-  LayoutAnimation,
   UIManager,
   Dimensions,
   FlatList,
@@ -16,7 +15,7 @@ import {
   Alert,
   Animated,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchBarWithSuggestions from '../components/SearchBar';
@@ -78,6 +77,7 @@ const ProductsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { productslug } = route.params || {};
+  const isFocused = useIsFocused();
 
   // Redux hooks
   const dispatch = useDispatch();
@@ -95,16 +95,30 @@ const ProductsScreen = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const sidebarX = useRef(new Animated.Value(-width * 0.8)).current;
 
+  // Handles the sidebar toggle state
   const toggleSidebar = () => {
-    const toValue = sidebarVisible ? -width * 0.8 : 0;
+    setSidebarVisible(prev => !prev);
+  };
+
+  // New useEffect to handle the animation based on sidebarVisible state
+  useEffect(() => {
+    const toValue = sidebarVisible ? 0 : -width * 0.8;
     Animated.timing(sidebarX, {
       toValue,
       duration: 300,
       useNativeDriver: true,
-    }).start(() => {
-      setSidebarVisible(!sidebarVisible);
+    }).start();
+  }, [sidebarVisible]);
+
+  // Close sidebar on screen blur
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (sidebarVisible) {
+        setSidebarVisible(false);
+      }
     });
-  };
+    return unsubscribe;
+  }, [navigation, sidebarVisible]);
 
   useEffect(() => {
     // Fetch wishlist and product data
@@ -203,7 +217,7 @@ const ProductsScreen = () => {
     Alert.alert("Contact Seller", "This would initiate contact with the seller, e.g., via call, email, or an inquiry form.");
   };
 
- const renderProductItem = ({ item: product }) => {
+const renderProductItem = ({ item: product }) => {
     const isWishlisted = wishlistItems.some(item => item._id === product._id);
     const imageUri = product?.images?.[0]?.url || product?.images?.[0] || "https://via.placeholder.com/300/F0F0F0/000000?text=Product+Image";
     
@@ -282,12 +296,14 @@ const ProductsScreen = () => {
             </View>
 
             <View style={styles.badgesWrapper}>
-              {businessProfile.yearOfEstablishment && (
+              {/* Use !! to explicitly cast to a boolean */}
+              {!!businessProfile.yearOfEstablishment && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>🏢 Est. {businessProfile.yearOfEstablishment}</Text>
                 </View>
               )}
-              {product?.tradeShopping?.gst && (
+              {/* Use !! to explicitly cast to a boolean */}
+              {!!product?.tradeShopping?.gst && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>✅ GST: {product.tradeShopping.gst}%</Text>
                 </View>
@@ -300,11 +316,8 @@ const ProductsScreen = () => {
             </View>
           </View>
         )}
-
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity style={styles.contactSellerButton} onPress={handleContactSeller}>
-            <Buyfrom product={product} sellerId={product?.userId} />
-          </TouchableOpacity>
+        <View style={{ marginTop: 10 }}>
+          <Buyfrom product={product} sellerId={product?.userId} />
         </View>
       </View>
     );
@@ -364,17 +377,19 @@ const ProductsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
-      <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
-        <Sidebar
-          activeScreen={null}
-          setActiveScreen={() => {}}
-          toggleSidebar={toggleSidebar}
-          navigation={navigation}
-        />
-      </Animated.View>
-      
-      {sidebarVisible && (
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
+      {/* Sidebar and Backdrop are only rendered if the sidebar is visible and the screen is focused */}
+      {sidebarVisible && isFocused && (
+        <>
+          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
+          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
+            <Sidebar
+              activeScreen={null}
+              setActiveScreen={() => {}}
+              toggleSidebar={toggleSidebar}
+              navigation={navigation}
+            />
+          </Animated.View>
+        </>
       )}
       
       <View style={styles.searchBarWrapper}>
@@ -386,12 +401,10 @@ const ProductsScreen = () => {
         keyExtractor={(item) => item._id}
         renderItem={renderProductItem}
         ListHeaderComponent={() => (
-          <>
             <SubcategorySlider
               subcategories={subcategories}
               onItemPress={handleSubcategoryPress}
             />
-          </>
         )}
         ListFooterComponent={() => (
           <View>
@@ -529,10 +542,8 @@ productInfoCard: {
  backgroundColor: '#fff',
  borderRadius: 10,
  padding: 10, // Increased padding for better spacing inside the card
- shadowColor: '#000',
- shadowOpacity: 0.1,
- shadowOffset: { width: 0, height: 1 },
- shadowRadius: 3,
+  borderWidth: 1,
+  borderColor: '#e5e7eb', // Tailwind's gray-200
  },
 
   centeredContainer: {

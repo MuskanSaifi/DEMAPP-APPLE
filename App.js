@@ -8,76 +8,76 @@ import { Provider } from 'react-redux';
 import { store } from './redux/store';
 
 import { AuthProvider } from './context/AuthContext';
-import RootApp from './RootApp'; // <-- Import the new RootApp component
+import RootApp from './RootApp'; 
 import NoInternetScreen from './screens/NoInternet';
 
 // Styles for the loading state (while checking connection)
 const loadingStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  text: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#555',
-  },
+   container: {
+ flex: 1,
+ justifyContent: 'center',
+ alignItems: 'center',
+ backgroundColor: '#fff',
+ },
+ text: {
+ marginTop: 10,
+ fontSize: 16,
+ color: '#555',
+ },
 });
 
 export default function App() {
-  const [isConnected, setIsConnected] = useState(true);
-  const [isInternetReachable, setIsInternetReachable] = useState(true);
-  const [isChecking, setIsChecking] = useState(true);
+ const [isConnected, setIsConnected] = useState(true);
+ const [isInternetReachable, setIsInternetReachable] = useState(true);
+ const [isChecking, setIsChecking] = useState(true);
 
-  useEffect(() => {
-    NetInfo.fetch().then(state => {
-      setIsConnected(state.isConnected);
-      setIsInternetReachable(state.isInternetReachable);
-      setIsChecking(false);
-    });
+ useEffect(() => {
+ NetInfo.fetch().then(state => {
+ setIsConnected(state.isConnected);
+ setIsInternetReachable(state.isInternetReachable);
+ setIsChecking(false);
+ });
 
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isConnected);
-      setIsInternetReachable(state.isInternetReachable);
-    });
+  const unsubscribe = NetInfo.addEventListener(state => {
+ setIsConnected(state.isConnected);
+  setIsInternetReachable(state.isInternetReachable);
+ });
 
-    return () => {
-      unsubscribe();
-    };
-  }, []);
+ return () => {
+ unsubscribe();
+ };
+ }, []);
 
-  const handleRetryConnection = async () => {
-    setIsChecking(true);
-    const state = await NetInfo.fetch();
-    setIsConnected(state.isConnected);
-    setIsInternetReachable(state.isInternetReachable);
-    setIsChecking(false);
-  };
+ const handleRetryConnection = async () => {
+setIsChecking(true);
+const state = await NetInfo.fetch();
+ setIsConnected(state.isConnected);
+ setIsInternetReachable(state.isInternetReachable);
+  setIsChecking(false);
+ };
 
-  if (isChecking) {
-    return (
-      <View style={loadingStyles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <ActivityIndicator size="large" color="#007bff" />
-        <Text style={loadingStyles.text}>Checking connection...</Text>
-      </View>
-    );
-  }
+ if (isChecking) {
+ return (
+ <View style={loadingStyles.container}>
+ <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+ <ActivityIndicator size="large" color="#007bff" />
+ <Text style={loadingStyles.text}>Checking connection...</Text>
+ </View>
+ );
+ }
 
-  if (!isConnected || !isInternetReachable) {
-    return <NoInternetScreen onRetry={handleRetryConnection} />;
-  }
+ if (!isConnected || !isInternetReachable) {
+ return <NoInternetScreen onRetry={handleRetryConnection} />;
+}
 
-  return (
-    <Provider store={store}>
-      <AuthProvider>
-        <NavigationContainer>
-          {/* Now render the new component that handles initial data fetching */}
-          <RootApp />
-        </NavigationContainer>
-      </AuthProvider>
-    </Provider>
-  );
+return (
+<Provider store={store}>
+ <AuthProvider>
+ <NavigationContainer>
+ {/* The RootApp component will now handle all navigation and user-related logic */}
+  <RootApp />
+ </NavigationContainer>
+</AuthProvider>
+ </Provider>
+);
 }

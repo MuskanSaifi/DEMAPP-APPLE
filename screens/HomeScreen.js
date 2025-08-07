@@ -134,7 +134,7 @@ height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar
     marginBottom: 1,
   },
   section: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   bottomTabsContainer: {
     position: 'absolute',

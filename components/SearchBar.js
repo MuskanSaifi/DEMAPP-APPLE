@@ -117,10 +117,12 @@ const SearchBarWithSuggestions = ({ toggleSidebar }) => {
     <SafeAreaView style={styles.wrapper} edges={['top']}>
       <View style={styles.searchHeaderContainer}>
         <View style={styles.searchContainer}>
-          <Image
-            source={require('../assets/company_logo.png')}
-            style={styles.companyLogoInsideSearch}
-          />
+          <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+      <Image
+        source={require('../assets/company_logo.png')}
+        style={styles.companyLogoInsideSearch}
+      />
+    </TouchableOpacity>
           <TextInput
             placeholder="Search Products & Suppliers"
             placeholderTextColor="#888"
@@ -142,7 +144,7 @@ const SearchBarWithSuggestions = ({ toggleSidebar }) => {
 
         <TouchableOpacity
           style={styles.rightIconWrapper}
-          onPress={() => alert('Notifications')}
+          onPress={() => navigation.navigate('NotificationsScreen')}
         >
           <Ionicons name="notifications-outline" size={24} color="#333" />
         </TouchableOpacity>

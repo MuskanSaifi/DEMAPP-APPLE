@@ -34,7 +34,6 @@ const BottomTabs = () => {
     { name: 'Subscription Plans', icon: 'wallet-outline', route: 'PricingPlans' },
     { name: 'Google Listing', icon: 'globe-outline' },
     { name: 'Trade Loan', icon: 'cash-outline' },
-    { name: 'Tradekhatta', icon: 'receipt-outline' },
     { name: 'Wishlist', icon: 'heart-outline', route: 'WishlistScreen', count: wishlistCount },
     { name: 'GetDomain', icon: 'at-outline' },
     { name: 'Trade Shows', icon: 'storefront-outline' },
@@ -76,7 +75,7 @@ const BottomTabs = () => {
     } else if (tab === 'Account') {
       navigation.navigate('DashboardScreen');
     } else if (tab === 'Message') {
-      navigation.navigate('EnquiryMessages');
+      navigation.navigate('NotificationsScreen');
     }
   };
 

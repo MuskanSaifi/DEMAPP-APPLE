@@ -204,17 +204,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
   },
-  productCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+productCard: {
+  backgroundColor: '#fff',
+  borderRadius: 8,
+  padding: 15,
+  marginBottom: 15,
+  borderWidth: 1,
+  borderColor: '#e5e7eb', // Tailwind's gray-200
+},
+
   productHeader: {
     flexDirection: 'row',
     alignItems: 'center',

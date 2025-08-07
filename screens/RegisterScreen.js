@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Image,
 } from 'react-native';
 import { CountryPicker } from 'react-native-country-codes-picker';
 import axios from 'axios';
@@ -107,6 +108,12 @@ export default function RegisterScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.formContainer}>
+             <Image 
+          source={require('../assets/company_logo.png')} // ✅ Correct for local image
+          style={styles.productImage}
+          resizeMode="contain"
+        />
+      
         <Text style={styles.title}>{signup ? 'Verify OTP' : 'Create Account'}</Text>
         <Text style={styles.subtitle}>
           {signup ? 'Enter the OTP sent to your mobile' : 'Fill in the details below to register'}
@@ -228,18 +235,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingVertical: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FFF',
   },
   formContainer: {
     backgroundColor: '#fff',
     padding: 24,
     borderRadius: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
   },
+    productImage: {
+  width: '80',
+  height: '80',
+  alignSelf: 'center',
+},
   title: {
     fontSize: 28,
     fontWeight: 'bold',

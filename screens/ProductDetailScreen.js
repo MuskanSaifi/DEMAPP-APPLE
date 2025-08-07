@@ -14,6 +14,7 @@ import {
   Platform,
   StatusBar,
   Animated,
+  Alert,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -437,7 +438,7 @@ export default function ProductDetailScreen() {
                   </View>
                   <View style={styles.relatedProductInfo}>
                     <Text style={styles.relatedProductName} numberOfLines={2}>
-                      {relatedProduct.name}
+          {relatedProduct.name || 'Product Name Missing'}
                     </Text>
                     <Text style={styles.relatedProductPrice}>
                       {relatedProduct.tradeShopping?.slabPricing?.[0]?.price
@@ -491,7 +492,7 @@ export default function ProductDetailScreen() {
                         </Text>
                       )}
                     </View>
-                    <Text style={styles.relatedProductRating}>⭐⭐⭐⭐ 4.2 (79)</Text>
+                    {/* <Text style={styles.relatedProductRating}>⭐⭐⭐⭐ 4.2 (79)</Text> */}
                     <View style={styles.buyFromContainer}>
                       <Buyfrom product={product} sellerId={product?.userId?._id} />
                     </View>
@@ -503,38 +504,63 @@ export default function ProductDetailScreen() {
         )}
 
         {/* Related Categories Section */}
-        {relatedCategories.length > 0 && (
-          <View style={styles.relatedSection}>
-            <Text style={styles.relatedSectionTitle}>Explore More in Similar Categories</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedCategoriesScroll}>
-              {relatedCategories.map((rc) => (
-                <TouchableOpacity
-                  key={rc._id}
-                  onPress={() =>
-                    navigation.navigate(
-                      rc.type === 'product_as_category_display' ? 'ProductsScreen' : 'CategoryScreen',
-                      rc.type === 'product_as_category_display'
-                        ? { productslug: rc.productslug }
-                        : { slug: rc.slug, categoryId: rc._id }
-                    )
-                  }
-                  style={styles.relatedCategoryCard}
-                >
-                  <View style={styles.relatedCategoryImageContainer}>
-                    <Image
-                      source={{ uri: rc.image || 'https://via.placeholder.com/100' }}
-                      style={styles.relatedCategoryImage}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <Text style={styles.relatedCategoryName} numberOfLines={2}>
-                    {rc.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+     {relatedCategories.length > 0 && (
+  <View style={styles.relatedSection}>
+    <Text style={styles.relatedSectionTitle}>Explore More in Similar Categories</Text>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.relatedCategoriesScroll}
+    >
+      {relatedCategories.map((rc) => (
+        
+<TouchableOpacity
+  key={rc._id}
+  onPress={() => {
+    // Condition 1: Check for a valid productslug
+    if (rc?.productslug && typeof rc.productslug === 'string') {
+      navigation.navigate('ProductsScreen', { productslug: rc.productslug });
+    } 
+    // Condition 2: Check for a slug with a slash for SellerProductsScreen
+    else if (rc?.slug && typeof rc.slug === 'string' && rc.slug.includes('/')) {
+      const [categorySlug, subcategorySlug] = rc.slug.split('/');
+      if (categorySlug && subcategorySlug) {
+        navigation.navigate('SellerProductsScreen', {
+          categorySlug,
+          subcategorySlug,
+        });
+      } else {
+        Alert.alert("Navigation Error", "Invalid category or subcategory slug.");
+      }
+    } 
+    // New Condition: Check for a slug without a slash to go to ProductsScreen
+    else if (rc?.slug && typeof rc.slug === 'string') {
+        navigation.navigate('ProductsScreen', { productslug: rc.slug });
+    }
+    // Final else block for truly invalid items
+    else {
+      console.warn("Item skipped due to missing productslug or slug:", rc);
+    }
+  }}
+  style={styles.relatedCategoryCard}
+>
+          <View style={styles.relatedCategoryImageContainer}>
+            <Image
+              source={{ uri: rc.image || 'https://via.placeholder.com/100' }}
+              style={styles.relatedCategoryImage}
+              resizeMode="cover"
+            />
           </View>
-        )}
+          <Text style={styles.relatedCategoryName} numberOfLines={2}>
+            {rc.name || 'Category Name Missing'}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  </View>
+)}
+
+        
       </ScrollView>
 
       {/* Zoom Modal */}
@@ -914,6 +940,7 @@ tableCellValue: {
   },
   buyFromContainer: {
     borderTopWidth: 1,
+    marginTop:12,
     borderTopColor: '#e2e8f0',
   },
   relatedSection: {

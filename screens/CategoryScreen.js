@@ -85,20 +85,14 @@ const styles = StyleSheet.create({
     borderRadius: 12, // Slightly more rounded corners
     backgroundColor: '#ffffff', // White background for cards
 
-    // Enhanced Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 }, // More pronounced shadow
-    shadowOpacity: 0.08, // Subtle opacity
-    shadowRadius: 8, // More diffused shadow
-
-    // Enhanced Shadow for Android
-    elevation: 5, // Higher elevation
+   borderWidth: 1,
+    borderColor: '#eee',
   },
   icon: {
     width: 50, // Slightly larger icon
     height: 50,
     marginBottom: 8,
-    borderRadius: 10, // Optional: small border radius for icons
+    borderRadius: 5, // Optional: small border radius for icons
   },
   subcategoryText: {
     fontSize: 11, // Slightly smaller for better fit

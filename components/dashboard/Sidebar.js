@@ -115,7 +115,7 @@ const Sidebar = ({ activeScreen, setActiveScreen, toggleSidebar,  navigation }) 
         
         {expanded === 'products' && (
           <View style={styles.subMenu}>
-            {['Add Product', 'View Products'].map((sub, i) => (
+            {['Add Product', 'My Products'].map((sub, i) => (
               <TouchableOpacity
                 key={i}
                 style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}

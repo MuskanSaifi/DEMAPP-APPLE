@@ -12,7 +12,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 4;
 const CARD_WIDTH = width / ITEMS_PER_PAGE - 20;
 
 const ProductSections = ({ tag, Name }) => {
@@ -129,10 +129,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    marginBottom: 10,
+    marginBottom: 1,
   },
   heading: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "bold",
     color: "#333",
   },
@@ -153,11 +153,11 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    borderRadius: 16,
+    borderRadius: 10,
     backgroundColor: "#fff",
-    marginHorizontal: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    marginHorizontal: 4,
+    paddingVertical: 7,
+    paddingHorizontal: 5,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.1,
@@ -165,9 +165,9 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   imageWrapper: {
-    width: CARD_WIDTH * 0.85,
-    height: CARD_WIDTH * 0.85,
-    borderRadius: 12,
+    width: CARD_WIDTH * 0.94,
+    height: CARD_WIDTH * 0.94,
+    borderRadius: 4,
     overflow: "hidden",
     marginBottom: 8,
     borderWidth: 1,
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   productName: {
-    fontSize: 13,
+    fontSize: 10,
     color: "#333",
     textAlign: "center",
     marginTop: 5,

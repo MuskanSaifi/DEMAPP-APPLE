@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
-   Platform, StatusBar 
+  Platform,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Sidebar from '../components/dashboard/Sidebar';
@@ -32,6 +33,7 @@ const DashboardScreen = () => {
   const [activeScreen, setActiveScreen] = useState('Dashboard');
   const route = useRoute();
   const navigation = useNavigation();
+  const isFocused = useIsFocused(); // Hook to check if the screen is focused
 
   useEffect(() => {
     if (route.params?.selectedTab) {
@@ -40,61 +42,86 @@ const DashboardScreen = () => {
     }
   }, [route.params?.selectedTab]);
 
-  const toggleSidebar = () => {
-    const toValue = sidebarVisible ? -width * 0.8 : 0;
+  // Use useEffect to close the sidebar when the screen is blurred
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      // Close the sidebar when the screen loses focus
+      if (sidebarVisible) {
+        toggleSidebar();
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, sidebarVisible]);
+
+const toggleSidebar = () => {
+  if (!sidebarVisible) {
+    // OPEN: First show sidebar, then animate in
+    setSidebarVisible(true);
     Animated.timing(sidebarX, {
-      toValue,
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  } else {
+    // CLOSE: Animate out, then hide sidebar
+    Animated.timing(sidebarX, {
+      toValue: -width * 0.8,
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      setSidebarVisible(!sidebarVisible);
+      setSidebarVisible(false);
     });
-  };
+  }
+};
+
 
   return (
     <SafeAreaView style={styles.safeAreaContainer}>
-      {/* Sidebar */}
-      <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
-        <Sidebar
-          activeScreen={activeScreen}
-          setActiveScreen={setActiveScreen}
-          toggleSidebar={toggleSidebar}
-          isVisible={sidebarVisible}
-        />
-      </Animated.View>
+      {/* Sidebar and Backdrop are only rendered if the sidebar is visible */}
+      {sidebarVisible && isFocused && (
+        <>
+          {/* Sidebar */}
+          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
+            <Sidebar
+              activeScreen={activeScreen}
+              setActiveScreen={setActiveScreen}
+              toggleSidebar={toggleSidebar}
+              isVisible={sidebarVisible}
+              navigation={navigation}
+            />
+          </Animated.View>
 
-      {/* Backdrop */}
-      {sidebarVisible && (
-        <TouchableOpacity
-          style={styles.backdrop}
-          activeOpacity={1}
-          onPress={toggleSidebar}
-        />
+          {/* Backdrop */}
+          <TouchableOpacity
+            style={styles.backdrop}
+            activeOpacity={1}
+            onPress={toggleSidebar}
+          />
+        </>
       )}
 
       {/* Header */}
-<View style={styles.safeArea}>
-  <View style={styles.header}>
- <View style={styles.headerRow}>
-  <Text style={styles.screenTitle}>{activeScreen}</Text>
-  <TouchableOpacity style={styles.hamburger} onPress={toggleSidebar}>
-    <Icon name="menu" size={24} color="#1F2937" />
-  </TouchableOpacity>
-</View>
-  </View>
-</View>
-
-
+      <View style={styles.safeArea}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <Text style={styles.screenTitle}>{activeScreen}</Text>
+            <TouchableOpacity style={styles.hamburger} onPress={toggleSidebar}>
+              <Icon name="menu" size={24} color="#1F2937" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
 
       {/* Main Content */}
-{activeScreen === 'Dashboard' && <DashboardMain setActiveScreen={setActiveScreen} />}
+      {activeScreen === 'Dashboard' && <DashboardMain setActiveScreen={setActiveScreen} />}
       {activeScreen === 'Payments' && <AllPayments />}
       {activeScreen === 'Support Person' && <SupportPerson />}
       {activeScreen === 'Customer Leads' && <CustomerLeads />}
       {activeScreen === 'User Profile' && <UserProfile />}
       {activeScreen === 'Business Profile' && <BusinessProfile />}
       {activeScreen === 'Bank Details' && <BankDetails />}
-      {activeScreen === 'View Products' && <MyProducts />}
+      {activeScreen === 'My Products' && <MyProducts />}
       {activeScreen === 'Add Product' && <AddProduct />}
 
       {/* Bottom Tabs */}
@@ -135,13 +162,12 @@ const styles = StyleSheet.create({
   },
 
   screenTitle: {
-  fontSize: 18,
-  fontWeight: '600',
-  color: '#1F2937',
-  marginLeft: 12,
-  textTransform: 'capitalize',
-},
-
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginLeft: 12,
+    textTransform: 'capitalize',
+  },
 
   hamburger: {
     margin: 5,
@@ -188,7 +214,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     shadowOffset: { width: 0, height: -1 },
   },
-  // You'll still need to style the individual BottomTabs component
 });
 
 export default DashboardScreen;

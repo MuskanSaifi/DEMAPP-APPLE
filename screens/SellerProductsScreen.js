@@ -1,26 +1,35 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
+// SellerProductsScreen.js
+import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
 import {
   View,
   Text,
-  ScrollView,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
   FlatList,
   Platform,
+  UIManager,
+  Animated,
   StatusBar,
-  Linking,
+  ActivityIndicator,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import Buyfrom from "../components/BuyForm"; // Ensure this path is correct
 import { useDispatch, useSelector } from 'react-redux';
 import { addProductToWishlist, removeProductFromWishlist } from '../redux/wishlistSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import SearchBarWithSuggestions from '../components/SearchBar';
+import Buyfrom from "../components/BuyForm"; 
+import BottomTabs from '../components/BottomTabs';
+import Sidebar from "../components/Sidebar";
 
 const { width } = Dimensions.get("window");
 const isDesktop = width > 768;
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const decodeSlugForComparison = (str) => decodeURIComponent(str || '').toLowerCase();
 const formatSlugForDisplay = (str) => decodeSlugForComparison(str).replace(/-/g, ' ');
@@ -41,7 +50,12 @@ const SubcategoryList = ({ subcategories, loading, routeSubcategorySlug, handleS
         style={[styles.subcategoryItem, isActive && styles.subcategoryItemActive]}
         onPress={() => handleSubcategoryNav(item)}
       >
-        <Text style={[styles.subcategoryItemText, isActive && styles.subcategoryItemTextActive]}>
+          <Image
+              source={{ uri: item.icon || 'https://via.placeholder.com/80/E0E0E0/000000?text=Subcat' }}
+              style={[styles.subcategoryImage, isActive && styles.subcategoryImageActive]}
+              resizeMode="cover"
+            />
+        <Text style={[styles.subcategoryName, isActive && styles.subcategoryItemTextActive]}>
           {item.name}
         </Text>
       </TouchableOpacity>
@@ -93,9 +107,7 @@ const ProductCard = React.memo(({ item, handleProductPress, handleWishlistToggle
 
         {item.businessProfile && shouldDisplay(item.businessProfile.companyName) && (
           <View style={styles.companyInfo}>
-            <TouchableOpacity onPress={() => handleCompanyProfileNav(item.userId?._id)}>
               <Text style={styles.companyNameText}>{item.businessProfile.companyName}</Text>
-            </TouchableOpacity>
             <View style={styles.companyMetaRow}>
               {shouldDisplay(item.businessProfile.city) && (
                 <View style={styles.companyMetaItem}>
@@ -127,8 +139,10 @@ const ProductCard = React.memo(({ item, handleProductPress, handleWishlistToggle
             </View>
           )}
         </View>
-
-        <Buyfrom product={item} sellerId={item?.userId?._id} />
+        
+        <View style={styles.bottomButtonsContainer}>
+          <Buyfrom product={item} sellerId={item?.userId?._id} />
+        </View>
       </View>
     </View>
   );
@@ -140,6 +154,7 @@ const SellerProductsScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { items: wishlistItems } = useSelector(state => state.wishlist);
+  const isFocused = useIsFocused();
 
   const { categorySlug: routeCategorySlug, subcategorySlug: routeSubcategorySlug } = route.params || {};
 
@@ -149,6 +164,35 @@ const SellerProductsScreen = () => {
   const [error, setError] = useState(null);
   const [currentCategoryName, setCurrentCategoryName] = useState("");
   const [currentSubcategoryName, setCurrentSubcategoryName] = useState("");
+
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const sidebarX = useRef(new Animated.Value(-width * 0.8)).current;
+
+  // Handles the sidebar toggle logic
+  const toggleSidebar = () => {
+    setSidebarVisible(prev => !prev);
+  };
+  
+  // New useEffect to handle the animation based on sidebarVisible state
+  useEffect(() => {
+    const toValue = sidebarVisible ? 0 : -width * 0.8;
+    Animated.timing(sidebarX, {
+      toValue,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [sidebarVisible]);
+
+  // Close sidebar on screen blur
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      // We no longer need to call toggleSidebar, just set the state to false
+      if (sidebarVisible) {
+        setSidebarVisible(false);
+      }
+    });
+    return unsubscribe;
+  }, [navigation, sidebarVisible]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -207,11 +251,12 @@ const SellerProductsScreen = () => {
   }, [routeCategorySlug, routeSubcategorySlug]);
 
   useLayoutEffect(() => {
+    StatusBar.setBarStyle('dark-content', true);
+    if (Platform.OS === 'android') {
+        StatusBar.setBackgroundColor('#F6F9FF');
+    }
     navigation.setOptions({
-      title: currentSubcategoryName || 'Products',
-      headerStyle: styles.headerStyle,
-      headerTintColor: '#333',
-      headerTitleStyle: styles.headerTitleStyle,
+        headerShown: false,
     });
   }, [navigation, currentSubcategoryName]);
 
@@ -272,52 +317,85 @@ const SellerProductsScreen = () => {
     </View>
   );
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        {renderHeader()}
-        <View style={styles.productGridSkeletonContainer}>
-          {[...Array(isDesktop ? 4 : 2)].map((_, i) => <ProductSkeleton key={i} />)}
-        </View>
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Ionicons name="alert-circle-outline" size={50} color="#FF6347" style={{ marginBottom: 10 }} />
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
-          <Text style={styles.goBackButtonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
+  // --- Main rendering logic with new components ---
   return (
-    <FlatList
-      data={products}
-      keyExtractor={(item) => item._id}
-      numColumns={isDesktop ? 2 : 1}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmptyComponent}
-      contentContainerStyle={styles.flatListContent}
-      renderItem={({ item }) => {
-        const isProductInWishlist = wishlistItems.some(
-          (wishlistItem) => wishlistItem._id === item._id || (wishlistItem.product && wishlistItem.product._id === item._id)
-        );
-        return (
-          <ProductCard
-            item={item}
-            handleProductPress={handleProductPress}
-            handleWishlistToggle={handleWishlistToggle}
-            isProductInWishlist={isProductInWishlist}
-            handleCompanyProfileNav={handleCompanyProfileNav}
-          />
-        );
-      }}
-    />
+    <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
+      {/* Sidebar and Backdrop are only rendered if the sidebar is visible and the screen is focused */}
+      {sidebarVisible && isFocused && (
+        <>
+          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
+          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
+            <Sidebar
+              activeScreen={null}
+              setActiveScreen={() => {}}
+              toggleSidebar={toggleSidebar}
+              navigation={navigation}
+            />
+          </Animated.View>
+        </>
+      )}
+      
+      {/* SearchBar */}
+      <View style={styles.searchBarWrapper}>
+        <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
+      </View>
+
+      {/* Main Content (conditionally rendered) */}
+      {loading ? (
+        <>
+          <View style={styles.subcategoriesContainer}>
+            <Text style={styles.subcategoriesTitle}>Subcategories</Text>
+            <FlatList
+              horizontal
+              data={Array(5).fill({})}
+              keyExtractor={(item, index) => `skeleton-sub-${index}`}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.subcategoriesList}
+              renderItem={() => <View style={styles.subcategoryItemSkeleton} />}
+            />
+          </View>
+          <View style={styles.productGridSkeletonContainer}>
+            {[...Array(isDesktop ? 4 : 2)].map((_, i) => <ProductSkeleton key={i} />)}
+          </View>
+        </>
+      ) : error ? (
+        <View style={styles.centeredContainer}>
+          <Ionicons name="alert-circle-outline" size={50} color="#FF6347" style={{ marginBottom: 10 }} />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackButton}>
+            <Text style={{ color: '#6D4AAE' }}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item._id}
+          numColumns={isDesktop ? 2 : 1}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmptyComponent}
+          contentContainerStyle={styles.flatListContent}
+          renderItem={({ item }) => {
+            const isProductInWishlist = wishlistItems.some(
+              (wishlistItem) => wishlistItem._id === item._id || (wishlistItem.product && wishlistItem.product._id === item._id)
+            );
+            return (
+              <ProductCard
+                item={item}
+                handleProductPress={handleProductPress}
+                handleWishlistToggle={handleWishlistToggle}
+                isProductInWishlist={isProductInWishlist}
+                handleCompanyProfileNav={handleCompanyProfileNav}
+              />
+            );
+          }}
+        />
+      )}
+      
+      {/* BottomTabs (always visible) */}
+      <View style={styles.bottomTabsContainer}>
+        <BottomTabs />
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -334,92 +412,106 @@ const ProductSkeleton = () => (
     </View>
   </View>
 );
-
 const styles = StyleSheet.create({
-  container: {
+  safeAreaContainer: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#fff',
   },
-  headerStyle: {
-    backgroundColor: '#FFFFFF',
+  searchBarWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: '#fff',
+    paddingVertical: 0,
+    paddingHorizontal: 16,
+    elevation: 5,
     shadowColor: '#000',
+    shadowOpacity: 0.07,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 4,
   },
-  headerTitleStyle: {
-    fontWeight: '600',
-    fontSize: 18,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   centeredContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   errorText: {
-    fontSize: 18,
-    color: "#E74C3C",
-    textAlign: "center",
-    marginHorizontal: 20,
-    marginBottom: 15,
+    fontSize: 16,
+    color: '#FF6347',
+    textAlign: 'center',
   },
   goBackButton: {
-    backgroundColor: '#3498DB',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#e0e0e0',
     borderRadius: 8,
   },
-  goBackButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  flatListContent: {
+    padding: 10,
+    paddingBottom: 70, // To make space for the BottomTabs
   },
-
+  productCard: {
+ width: '96%', // Takes full width of the FlatList container
+ marginVertical: 8, // Adds vertical space between cards
+ marginHorizontal: 8,
+ backgroundColor: '#fff',
+ borderRadius: 10,
+ padding: 10, // Increased padding for better spacing inside the card
+  borderWidth: 1,
+  borderColor: '#e5e7eb', // Tailwind's gray-200
+  },
   subcategoriesContainer: {
     backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 15,
-    marginHorizontal: 10,
-    marginBottom: 15,
-    ...Platform.select({
-      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-      android: { elevation: 3 },
-    }),
+    marginTop: 70,
   },
   subcategoriesTitle: {
-  fontWeight: 'bold',
+    fontWeight: 'bold',
   fontSize: 14,
   marginTop: 5,
   marginBottom: 8,
   color: '#333',
   },
   subcategoriesList: {
-    paddingVertical: 5,
+    paddingHorizontal: 15,
+    paddingRight: 30, // For better scroll experience
   },
   subcategoryItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: "#DCDFE4",
-    marginRight: 10,
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 8,
+    width: 60,
   },
   subcategoryItemActive: {
-    backgroundColor: "#6D4AAE",
-    borderColor: "#6D4AAE",
+    borderColor: '#6D4AAE',
   },
-  subcategoryItemText: {
-    color: "#5C6A7B",
-    fontSize: 14,
+  subcategoryImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  subcategoryImageActive: {
+    borderWidth: 1,
+    borderColor: '#6D4AAE',
+  },
+  subcategoryName: {
+    fontSize: 10,
+    color: '#555',
     fontWeight: '500',
+    textAlign: 'center',
   },
   subcategoryItemTextActive: {
-    color: "#FFFFFF",
+    color: '#6D4AAE',
     fontWeight: '600',
   },
   subcategoryItemSkeleton: {
@@ -428,22 +520,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: '#E0E0E0',
     marginRight: 10,
-  },
-  flatListContent: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-    flexGrow: 1,
-  },
-  productCard: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    margin: 8,
-    ...Platform.select({
-      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-      android: { elevation: 3 },
-    }),
-    overflow: 'hidden',
   },
   productImageWrapper: {
     width: '100%',
@@ -455,14 +531,6 @@ const styles = StyleSheet.create({
   productImage: {
     width: "100%",
     height: "100%",
-  },
-  wishlistButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 20,
-    padding: 8,
   },
   productInfo: {
     padding: 15,
@@ -567,23 +635,77 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
+  bottomTabsContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+  },
+   sidebar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width * 0.8,
+height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
+    zIndex: 999,
+    elevation: 5,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 2, height: 0 },
+    shadowRadius: 5,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 99,
+  },
+  wishlistButton: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 20,
+    padding: 5,
+  },
+  bottomButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
   productGridSkeletonContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
   },
-  productCardSkeleton: {
-    width: isDesktop ? (width / 2) - 30 : width - 20,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    margin: 8,
-    ...Platform.select({
-      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
-      android: { elevation: 3 },
-    }),
-    overflow: 'hidden',
-  },
+productCardSkeleton: {
+  width: isDesktop ? (width / 2) - 30 : width - 20,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 12,
+  margin: 8,
+  alignSelf: "center", // ✅ This centers it horizontally
+  ...Platform.select({
+    ios: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+    },
+    android: {
+      elevation: 3,
+    },
+  }),
+  overflow: "hidden",
+},
+
   productImageSkeleton: {
     width: '100%',
     height: isDesktop ? 200 : 180,
