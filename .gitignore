@@ -21,6 +21,9 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
+# Firebase Service Account Key
+dial-export-mart-firebase-adminsdk-fbsvc-084122f9db.json
+
 # debug
 npm-debug.*
 yarn-debug.*
