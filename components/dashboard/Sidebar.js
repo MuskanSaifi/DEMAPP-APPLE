@@ -84,7 +84,7 @@ const Sidebar = ({ activeScreen, setActiveScreen, toggleSidebar,  navigation }) 
         </TouchableOpacity>
         {expanded === 'profile' && (
           <View style={styles.subMenu}>
-            {['User Profile', 'Business Profile', 'Bank Details', 'Manage Users'].map((sub, i) => (
+            {['User Profile', 'Business Profile', 'Bank Details'].map((sub, i) => (
               <TouchableOpacity
                 key={i}
                 style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}
@@ -145,7 +145,7 @@ const Sidebar = ({ activeScreen, setActiveScreen, toggleSidebar,  navigation }) 
         </TouchableOpacity>
         {expanded === 'leads' && (
           <View style={styles.subMenu}>
-            {['Customer Leads', 'Enquiries'].map((sub, i) => (
+            {['Customer Leads'].map((sub, i) => (
               <TouchableOpacity
                 key={i}
                 style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}

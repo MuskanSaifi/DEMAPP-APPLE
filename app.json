@@ -2,31 +2,41 @@
   "expo": {
     "name": "DialExportMart",
     "slug": "dial-export-mart",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/app_icon.png",
+    "icon": "./assets/New_icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "cli": {
       "appVersionSource": "remote"
     },
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/New_icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/app_icon.png",
-      "bundleIdentifier": "com.nazim_saifi.dialexportmart"
+      "icon": "./assets/New_icon.png",
+      "bundleIdentifier": "com.innodem.dalexportmart",
+      "buildNumber": "12", 
+       "jsEngine": "jsc",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library so you can upload profile and service images.",
+        "NSCameraUsageDescription": "This app requires access to your camera so you can take and upload photos.",
+        "NSMicrophoneUsageDescription": "This app requires access to your microphone for audio or video features if needed."
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive_icon_foreground.png",
+        "foregroundImage": "./assets/New_icon.png",
         "backgroundColor": "#FFFFFF"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.nazim_saifi.dialexportmart"
+      "package": "com.nazim_saifi.dialexportmart",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 18
     },
     "web": {
       "favicon": "./assets/favicon.png"

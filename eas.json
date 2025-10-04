@@ -4,10 +4,7 @@
   },
   "build": {
     "production": {
-      "autoIncrement": true,
-      "android": {
-        "buildType": "apk"
-      }
+      "autoIncrement": true
     },
     "development": {
       "developmentClient": true,
@@ -23,7 +20,13 @@
       }
     }
   },
-  "submit": {
-    "production": {}
+ "submit": {
+  "production": {
+    "ios": {
+      "appleId": "dialexportmart@gmail.com",  
+      "ascAppId": "6751717591"               
+    }
   }
+}
+
 }

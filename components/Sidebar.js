@@ -9,223 +9,269 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { AuthContext } from '../context/AuthContext'; // adjust path as needed
+import { AuthContext } from '../context/AuthContext'; 
 import axios from 'axios';
 
-const Sidebar = ({ activeScreen,  toggleSidebar, navigation }) => {
-  const { logout } = useContext(AuthContext);
-  const [expanded, setExpanded] = useState(''); // Changed from object to string
-  const { token, isLoading: authLoading } = useContext(AuthContext);
+const Sidebar = ({ activeScreen, toggleSidebar, navigation }) => {
+  const { logout, token } = useContext(AuthContext);
+  const [expanded, setExpanded] = useState('');
   const [userDetail, setUserDetail] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const toggleExpand = (section) => {
-    setExpanded((prev) => (prev === section ? '' : section)); // Toggle or close other
+    setExpanded((prev) => (prev === section ? '' : section));
   };
-      useEffect(() => {
-      fetchUser();
-    }, [token]);
 
-     const fetchUser = async () => {
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-    
-        try {
-          const res = await axios.get(
-            "https://www.dialexportmart.com/api/userprofile/profile/userprofile",
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          setUserDetail(res.data.user);
-        } catch (err) {
-          console.error("Error fetching user data:", err.response?.data || err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
+  useEffect(() => {
+    fetchUser();
+  }, [token]);
+
+  const fetchUser = async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        "https://www.dialexportmart.com/api/userprofile/profile/userprofile",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserDetail(res.data.user);
+    } catch (err) {
+      console.error("Error fetching user data:", err.response?.data || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.overlay}>
       <ScrollView style={styles.sidebar}>
-
-     <TouchableOpacity
-          style={[styles.menuItem, activeScreen === 'Dashboard' ? styles.activeItem : null]}
-       onPress={() => {
-  toggleSidebar();
-  navigation.navigate('DashboardScreen', { selectedTab: 'Dashboard' });
-}}  >
-
-  { userDetail?.icon ? (
-    <Image source={{ uri: userDetail.icon }} style={styles.profileImage} />
-
-  ) : (
-    <View style={styles.placeholderAvatar}>
-      <Text style={styles.avatarText}>
-        {userDetail?.fullname?.charAt(0).toUpperCase() || "U"}
-      </Text>
-    </View>
-  )}
-  <View style={styles.textContainer}>
-    <Text style={styles.greetingText}>👋 Welcome!</Text>
-    <Text style={styles.nameText}>{userDetail?.fullname || 'User'}</Text>
-  </View>
-</TouchableOpacity>
-
-        {/* Profile */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => toggleExpand('profile')}
-        >
-          <Icon name="account-circle" size={20} color="#666" />
-          <Text style={styles.label}>Profile</Text>
-          <Text style={styles.arrow}>{expanded === 'profile' ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
-        {expanded === 'profile' && (
-          <View style={styles.subMenu}>
-            {['User Profile', 'Business Profile', 'Bank Details', 'Manage Users'].map((sub, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}
-                onPress={() => {
-                toggleSidebar();
-                navigation.navigate('DashboardScreen', { selectedTab: sub });
-                }}
-              >
-                <Text
-                  style={[styles.subLabel, activeScreen === sub ? styles.activeSubLabel : null]}
-                >
-                  {sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Manage Products */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => toggleExpand('products')}
-        >
-          <Icon name="package-variant" size={20} color="#666" />
-          <Text style={styles.label}>Manage Products</Text>
-          <Text style={styles.arrow}>{expanded === 'products' ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
-
-        {expanded === 'products' && (
-          <View style={styles.subMenu}>
-            {['Add Product', 'View Products'].map((sub, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}
-                onPress={() => {
-                  toggleSidebar();
-                  navigation.navigate('DashboardScreen', { selectedTab: sub });
-                }}
-              >
-                <Text
-                  style={[styles.subLabel, activeScreen === sub ? styles.activeSubLabel : null]}
-                >
-                  {sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-
-  
-
-
-        {/* Leads & Enquiry */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => toggleExpand('leads')}
-        >
-          <Icon name="account-question" size={20} color="#666" />
-          <Text style={styles.label}>Leads & Enquiry</Text>
-          <Text style={styles.arrow}>{expanded === 'leads' ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
         
-        {expanded === 'leads' && (
-          <View style={styles.subMenu}>
-            {['Customer Leads', 'Enquiries'].map((sub, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.subItem, activeScreen === sub ? styles.activeSubItem : null]}
-                onPress={() => {
-                  toggleSidebar();
-                 navigation.navigate('DashboardScreen', { selectedTab: sub });
-                }}
-              >
-                <Text
-                  style={[styles.subLabel, activeScreen === sub ? styles.activeSubLabel : null]}
-                >
-                  {sub}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* If not logged in */}
+        {!token ? (
+          <>
+            <Text style={styles.welcome}>👋 Welcome Guest</Text>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('Login');
+              }}
+            >
+              <Icon name="login" size={20} color="#666" />
+              <Text style={styles.label}>Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('Register');
+              }}
+            >
+              <Icon name="account-plus" size={20} color="#666" />
+              <Text style={styles.label}>Register</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            {/* Logged-in header */}
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                activeScreen === 'Dashboard' ? styles.activeItem : null,
+              ]}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('DashboardScreen', { selectedTab: 'Dashboard' });
+              }}
+            >
+              {userDetail?.icon ? (
+                <Image source={{ uri: userDetail.icon }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.placeholderAvatar}>
+                  <Text style={styles.avatarText}>
+                    {userDetail?.fullname?.charAt(0).toUpperCase() || "U"}
+                  </Text>
+                </View>
+              )}
+              <View style={styles.textContainer}>
+                <Text style={styles.greetingText}>👋 Welcome!</Text>
+                <Text style={styles.nameText}>{userDetail?.fullname || 'User'}</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Profile */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => toggleExpand('profile')}
+            >
+              <Icon name="account-circle" size={20} color="#666" />
+              <Text style={styles.label}>Profile</Text>
+              <Text style={styles.arrow}>{expanded === 'profile' ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+            {expanded === 'profile' && (
+              <View style={styles.subMenu}>
+                {['User Profile', 'Business Profile', 'Bank Details'].map((sub, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.subItem,
+                      activeScreen === sub ? styles.activeSubItem : null,
+                    ]}
+                    onPress={() => {
+                      toggleSidebar();
+                      navigation.navigate('DashboardScreen', { selectedTab: sub });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.subLabel,
+                        activeScreen === sub ? styles.activeSubLabel : null,
+                      ]}
+                    >
+                      {sub}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Manage Products */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => toggleExpand('products')}
+            >
+              <Icon name="package-variant" size={20} color="#666" />
+              <Text style={styles.label}>Manage Products</Text>
+              <Text style={styles.arrow}>{expanded === 'products' ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+
+            {expanded === 'products' && (
+              <View style={styles.subMenu}>
+                {['Add Product', 'My Products'].map((sub, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.subItem,
+                      activeScreen === sub ? styles.activeSubItem : null,
+                    ]}
+                    onPress={() => {
+                      toggleSidebar();
+                      navigation.navigate('DashboardScreen', { selectedTab: sub });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.subLabel,
+                        activeScreen === sub ? styles.activeSubLabel : null,
+                      ]}
+                    >
+                      {sub}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Leads */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => toggleExpand('leads')}
+            >
+              <Icon name="account-question" size={20} color="#666" />
+              <Text style={styles.label}>Leads & Enquiry</Text>
+              <Text style={styles.arrow}>{expanded === 'leads' ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+
+            {expanded === 'leads' && (
+              <View style={styles.subMenu}>
+                {['Customer Leads', 'Enquiries'].map((sub, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.subItem,
+                      activeScreen === sub ? styles.activeSubItem : null,
+                    ]}
+                    onPress={() => {
+                      toggleSidebar();
+                      navigation.navigate('DashboardScreen', { selectedTab: sub });
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.subLabel,
+                        activeScreen === sub ? styles.activeSubLabel : null,
+                      ]}
+                    >
+                      {sub}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Payments */}
+            <TouchableOpacity
+              style={[
+                styles.menuItem,
+                activeScreen === 'Payments' ? styles.activeItem : null,
+              ]}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('DashboardScreen', { selectedTab: 'Payments' });
+              }}
+            >
+              <Icon name="credit-card" size={20} color="#666" />
+              <Text style={styles.label}>Payments</Text>
+            </TouchableOpacity>
+
+            {/* Support Person */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                toggleSidebar();
+                navigation.navigate('DashboardScreen', { selectedTab: 'Support Person' });
+              }}
+            >
+              <Icon name="account-supervisor" size={20} color="#666" />
+              <Text style={styles.label}>Support Person</Text>
+            </TouchableOpacity>
+
+            {/* Logout */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                Alert.alert(
+                  'Logout',
+                  'Are you sure you want to logout?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Logout',
+                      style: 'destructive',
+                      onPress: async () => {
+                        await logout();
+                        toggleSidebar();
+                        navigation.reset({
+                          index: 0,
+                          routes: [{ name: 'Login' }],
+                        });
+                      },
+                    },
+                  ],
+                  { cancelable: true }
+                );
+              }}
+            >
+              <Icon name="logout" size={20} color="#666" />
+              <Text style={styles.label}>Logout</Text>
+            </TouchableOpacity>
+          </>
         )}
-
-      {/* Payments */}
-        <TouchableOpacity
-          style={[styles.menuItem, activeScreen === 'Payments' ? styles.activeItem : null]}
-          onPress={() => {
-            toggleSidebar();
-           navigation.navigate('DashboardScreen', { selectedTab: 'Payments' });
-          }}
-        >
-          <Icon name="credit-card" size={20} color="#666" />
-          <Text style={styles.label}>Payments</Text>
-        </TouchableOpacity>
-
-        {/* Support Person */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => {
-            toggleSidebar();
-            navigation.navigate('DashboardScreen', { selectedTab: 'Support Person' });
-          }}
-        >
-          <Icon name="account-supervisor" size={20} color="#666" />
-          <Text style={styles.label}>Support Person</Text>
-        </TouchableOpacity>
-
-        {/* Logout */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => {
-            Alert.alert(
-              'Logout',
-              'Are you sure you want to logout?',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Logout',
-                  style: 'destructive',
-                  onPress: async () => {
-                    await logout();
-                    toggleSidebar();
-                    navigation.reset({
-                      index: 0,
-                      routes: [{ name: 'Login' }],
-                    });
-                  },
-                },
-              ],
-              { cancelable: true }
-            );
-          }}
-        >
-          <Icon name="logout" size={20} color="#666" />
-          <Text style={styles.label}>Logout</Text>
-        </TouchableOpacity>
       </ScrollView>
 
-      {/* Transparent Backdrop */}
       <TouchableOpacity style={styles.backdrop} onPress={toggleSidebar} />
     </View>
   );

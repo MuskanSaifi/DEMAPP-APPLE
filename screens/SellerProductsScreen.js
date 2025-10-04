@@ -95,7 +95,7 @@ const ProductCard = React.memo(({ item, handleProductPress, handleWishlistToggle
       <TouchableOpacity onPress={() => handleProductPress(item)} style={styles.productImageWrapper}>
         <Image source={{ uri: productImageUrl }} style={styles.productImage} resizeMode="contain" />
         <TouchableOpacity style={styles.wishlistButton} onPress={() => handleWishlistToggle(item._id)}>
-          <Ionicons name={isProductInWishlist ? 'heart' : 'heart-outline'} size={24} color={isProductInWishlist ? '#E74C3C' : '#333'} />
+          <Ionicons name={isProductInWishlist ? 'heart' : 'heart-outline'} size={24} color={isProductInWishlist ? '#FF6347' : 'black'} />
         </TouchableOpacity>
       </TouchableOpacity>
 
@@ -153,6 +153,7 @@ const SellerProductsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.user);
   const { items: wishlistItems } = useSelector(state => state.wishlist);
   const isFocused = useIsFocused();
 
@@ -206,7 +207,9 @@ const SellerProductsScreen = () => {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(`https://www.dialexportmart.com/api/adminprofile/category`);
+const res = await fetch(
+  `https://www.dialexportmart.com/api/adminprofile/categoryapp?userId=${user?._id || ""}`
+);
         if (!res.ok) {
           throw new Error(`Failed to fetch categories: ${res.statusText}`);
         }
@@ -292,6 +295,10 @@ const SellerProductsScreen = () => {
     const isProductInWishlist = wishlistItems.some(
       (item) => item._id === productId || (item.product && item.product._id === productId)
     );
+          if (!user) {
+    navigation.navigate('WishlistScreen');
+    return;
+  }
     if (isProductInWishlist) {
       dispatch(removeProductFromWishlist(productId));
     } else {
@@ -669,7 +676,7 @@ height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar
     position: 'absolute',
     top: 15,
     right: 15,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: 'rgba(191, 191, 191, 0.13)',
     borderRadius: 20,
     padding: 5,
   },

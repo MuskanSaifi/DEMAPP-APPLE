@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Linking,
   Alert, // Import Alert for permissions
 } from 'react-native';
 import axios from 'axios';
@@ -526,18 +527,51 @@ const AddProduct = () => {
                 selectedValue={product.moqUnit}
                 onValueChange={(itemValue) => handleChange('moqUnit', itemValue)}
                 required>
-                <Picker.Item label="Kilogram" value="Kilograms" />
-                <Picker.Item label="Piece" value="Piece/Pieces" />
-                <Picker.Item label="Meter" value="Meter" />
-                <Picker.Item label="Ton" value="Ton/Tons" />
-                <Picker.Item label="Unit" value="Unit/Units" />
+  <Picker.Item label="Kilogram" value="Kilograms" />
+<Picker.Item label="Gram" value="Grams" />
+<Picker.Item label="Metric Ton" value="Metric Tons" />
+<Picker.Item label="Ton" value="Ton/Tons" />
+<Picker.Item label="Piece" value="Piece/Pieces" />
+<Picker.Item label="Unit" value="Unit/Units" />
+<Picker.Item label="Dozen" value="Dozen" />
+<Picker.Item label="Pair" value="Pairs" />
+<Picker.Item label="Set" value="Set/Sets" />
+<Picker.Item label="Box" value="Box/Boxes" />
+<Picker.Item label="Carton" value="Carton/Cartons" />
+<Picker.Item label="Bag" value="Bag/Bags" />
+<Picker.Item label="Roll" value="Roll/Rolls" />
+<Picker.Item label="Sheet" value="Sheet/Sheets" />
+<Picker.Item label="Meter" value="Meter/Meters" />
+<Picker.Item label="Centimeter" value="Centimeter" />
+<Picker.Item label="Inch" value="Inch/Inches" />
+<Picker.Item label="Square Feet" value="Square Feet" />
+<Picker.Item label="Square Meter" value="Square Meter" />
+<Picker.Item label="Cubic Feet" value="Cubic Feet" />
+<Picker.Item label="Cubic Meter" value="Cubic Meter" />
+<Picker.Item label="Liter" value="Liter/Liters" />
+<Picker.Item label="Milliliter" value="Milliliters" />
+<Picker.Item label="Gallon" value="Gallon/Gallons" />
+<Picker.Item label="Barrel" value="Barrel/Barrels" />
+
               </Picker>
             </View>
           </View>
 
           {/* Image Upload Section */}
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Product Images (Max 6)</Text>
+              {/* Main Label */}
+      <Text style={styles.label}>Product Images</Text>
+
+      {/* Small text + link */}
+      <Text style={styles.note}>
+        (Max 6, each less than 500KB){' '}
+        <Text
+          style={styles.link}
+          onPress={() => Linking.openURL('https://www.iloveimg.com/compress-image')}
+        >
+          click here to compress image
+        </Text>
+      </Text>
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={handleImageSelection}
@@ -687,10 +721,13 @@ const AddProduct = () => {
                       handleNestedChange('specifications', null, 'thicknessUnit', itemValue)
                     }>
                     <Picker.Item label="Select" value="" />
-                    <Picker.Item label="Meter" value="Meter" />
-                    <Picker.Item label="Micrometers (um)" value="Micrometers (um)" />
-                    <Picker.Item label="Gauge" value="Gauge" />
-                    <Picker.Item label="Feet (ft)" value="Feet (ft)" />
+               <Picker.Item label="Meter" value="Meter" />
+<Picker.Item label="Centimeter (cm)" value="Centimeter (cm)" />
+<Picker.Item label="Millimeter (mm)" value="Millimeter (mm)" />
+<Picker.Item label="Micrometer (µm)" value="Micrometer (µm)" />
+<Picker.Item label="Nanometer (nm)" value="Nanometer (nm)" />
+<Picker.Item label="Inch (in)" value="Inch (in)" />
+<Picker.Item label="Feet (ft)" value="Feet (ft)" />
                   </Picker>
                 </View>
               </View>
@@ -911,12 +948,31 @@ const AddProduct = () => {
                 selectedValue={product.tradeShopping.unit}
                 onValueChange={(itemValue) => handleNestedChange('tradeShopping', null, 'unit', itemValue)}>
                 <Picker.Item label="Select Unit" value="" />
-                <Picker.Item label="Kilograms/Kilograms" value="Kilograms/Kilograms" />
-                <Picker.Item label="Number" value="Number" />
-                <Picker.Item label="Piece/Pieces" value="Piece/Pieces" />
-                <Picker.Item label="Ton/Tons" value="Ton/Tons" />
-                <Picker.Item label="Unit/Units" value="Unit/Units" />
-                <Picker.Item label="Twenty-Foot Container" value="Twenty-Foot Container" />
+                  <Picker.Item label="Kilogram" value="Kilograms" />
+<Picker.Item label="Gram" value="Grams" />
+<Picker.Item label="Metric Ton" value="Metric Tons" />
+<Picker.Item label="Ton" value="Ton/Tons" />
+<Picker.Item label="Piece" value="Piece/Pieces" />
+<Picker.Item label="Unit" value="Unit/Units" />
+<Picker.Item label="Dozen" value="Dozen" />
+<Picker.Item label="Pair" value="Pairs" />
+<Picker.Item label="Set" value="Set/Sets" />
+<Picker.Item label="Box" value="Box/Boxes" />
+<Picker.Item label="Carton" value="Carton/Cartons" />
+<Picker.Item label="Bag" value="Bag/Bags" />
+<Picker.Item label="Roll" value="Roll/Rolls" />
+<Picker.Item label="Sheet" value="Sheet/Sheets" />
+<Picker.Item label="Meter" value="Meter/Meters" />
+<Picker.Item label="Centimeter" value="Centimeter" />
+<Picker.Item label="Inch" value="Inch/Inches" />
+<Picker.Item label="Square Feet" value="Square Feet" />
+<Picker.Item label="Square Meter" value="Square Meter" />
+<Picker.Item label="Cubic Feet" value="Cubic Feet" />
+<Picker.Item label="Cubic Meter" value="Cubic Meter" />
+<Picker.Item label="Liter" value="Liter/Liters" />
+<Picker.Item label="Milliliter" value="Milliliters" />
+<Picker.Item label="Gallon" value="Gallon/Gallons" />
+<Picker.Item label="Barrel" value="Barrel/Barrels" />
               </Picker>
             </View>
 
@@ -1001,7 +1057,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f4f4f4',
-    marginBottom: 90,
   },
   tabContainer: {
     flexDirection: 'row',
@@ -1062,6 +1117,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#555',
     marginBottom: 5,
+  },
+   note: {
+    fontSize: 12, // छोटा text
+    color: '#555',
+  },
+  link: {
+    fontSize: 12,
+    color: '#007BFF', // नीला लिंक जैसा
+    textDecorationLine: 'underline',
   },
   input: {
     borderWidth: 1,
@@ -1207,6 +1271,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
+    marginBottom:70,
   },
   submitButtonText: {
     color: '#fff',

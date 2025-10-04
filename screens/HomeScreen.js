@@ -89,14 +89,14 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeAreaContainer: {
     flex: 1,
-    backgroundColor: '#F6F9FF',
+    backgroundColor: '#fff',
   },
   sidebar: {
     position: 'absolute',
     top: 0,
     left: 0,
     width: width * 0.8,
-height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
+    height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
     zIndex: 999,
     elevation: 5,
     backgroundColor: '#fff',

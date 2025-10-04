@@ -14,6 +14,7 @@ import { CountryPicker } from 'react-native-country-codes-picker';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
+import { Ionicons } from "@expo/vector-icons"; // top import
 
 export default function LoginScreen() {
   const [mobileNumber, setMobileNumber] = useState('');
@@ -65,37 +66,41 @@ export default function LoginScreen() {
     }
   };
 
-  const verifyOtp = async () => {
-    setError('');
-    setMessage('');
+const verifyOtp = async () => {
+  setError('');
+  setMessage('');
 
-    if (!otp.trim()) {
-      Alert.alert('Error', 'Please enter the OTP');
-      return;
-    }
-    
-    setLoading(true);
-    try {
-        const fullMobile = `+${callingCode}${mobileNumber}`;
-        const response = await axios.post('https://www.dialexportmart.com/api/auth/login', {
-        mobileNumber: fullMobile,
-        otp: otp,
-      });
+  if (!otp.trim()) {
+    Alert.alert('Error', 'Please enter the OTP');
+    return;
+  }
 
-      if (response.status === 200 && !response.data.error) {
-        if (response.data.token) {
-          await login(response.data.user, response.data.token);
-        }
-        Alert.alert('Login Success', 'You are now logged in');
-      } else {
-        setError(response.data.error || 'Invalid OTP');
+  setLoading(true);
+  try {
+    const fullMobile = `+${callingCode}${mobileNumber}`;
+    const response = await axios.post('https://www.dialexportmart.com/api/auth/login', {
+      mobileNumber: fullMobile,
+      otp: otp,
+    });
+
+    if (response.status === 200 && !response.data.error) {
+      if (response.data.token) {
+        await login(response.data.user, response.data.token);
       }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Something went wrong while verifying OTP');
-    } finally {
-      setLoading(false);
+      // ✅ Direct navigation to Home/Dashboard after login
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'DashboardScreen' }], // ya 'Home' agar uska naam HomeScreen hai
+      });
+    } else {
+      setError(response.data.error || 'Invalid OTP');
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.error || 'Something went wrong while verifying OTP');
+  } finally {
+    setLoading(false);
+  }
+};
 
 return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -158,6 +163,14 @@ return (
             Don't have an account? <Text style={{ fontWeight: 'bold' }}>Register</Text>
           </Text>
         </TouchableOpacity>
+        {/* ✅ Home Button */}
+<TouchableOpacity
+  style={styles.homeButton}
+  onPress={() => navigation.navigate("Home")} // ya 'Home' agar tumhara home screen ka naam alag hai
+>
+  <Ionicons name="home-outline" size={28} color="#1E3A8A" />
+  <Text style={{ marginTop: 3, color: "#1E3A8A" }}>Home</Text>
+</TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -193,6 +206,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  homeButton: {
+  marginTop: 30,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -247,7 +266,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loginLink: {
-    marginTop: 20,
+    marginTop: 10,
     textAlign: 'center',
     color: '#1E3A8A',
     fontSize: 15,

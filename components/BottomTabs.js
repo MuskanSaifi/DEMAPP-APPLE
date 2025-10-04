@@ -8,10 +8,12 @@ import {
   Modal,
   ScrollView,
   Animated,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useSelector } from 'react-redux'; // <-- New import
+import { useSelector } from 'react-redux';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const tabItems = [
   { label: 'Home', icon: 'home-outline' },
@@ -27,18 +29,18 @@ const BottomTabs = () => {
   const navigation = useNavigation();
 
   const serviceIconAnim = useRef(new Animated.Value(1)).current;
-  const wishlistCount = useSelector((state) => state.wishlist.items.length); // <-- Get the count
+  const wishlistCount = useSelector((state) => state.wishlist.items.length);
+  const user = useSelector((state) => state.user.user);
 
   const serviceItems = [
-    { name: 'Buy Leads', icon: 'bulb-outline' },
-    { name: 'Subscription Plans', icon: 'wallet-outline', route: 'PricingPlans' },
-    { name: 'Google Listing', icon: 'globe-outline' },
-    { name: 'Trade Loan', icon: 'cash-outline' },
-    { name: 'Wishlist', icon: 'heart-outline', route: 'WishlistScreen', count: wishlistCount },
-    { name: 'GetDomain', icon: 'at-outline' },
-    { name: 'Trade Shows', icon: 'storefront-outline' },
-    { name: 'GetDistributors', icon: 'people-outline' },
-    { name: 'More...', icon: 'ellipsis-horizontal-circle-outline' },
+{ name: 'Buy Leads', icon: 'bulb-outline' },
+{ name: 'Subscription Plans', icon: 'wallet-outline', route: 'PricingPlans' },
+{ name: 'Google Listing', icon: 'globe-outline' },
+{ name: 'Wishlist', icon: 'heart-outline', route: 'WishlistScreen', count: wishlistCount },
+{ name: 'GetDomain', icon: 'at-outline' },
+{ name: 'Categories', icon: 'list-outline', route: 'AllCategories' },
+{ name: 'Notifications', icon: 'notifications-outline', route: 'NotificationsScreen'},
+// { name: 'More...', icon: 'ellipsis-horizontal-circle-outline' },
   ];
 
   const animateServiceIcon = () => {
@@ -73,7 +75,11 @@ const BottomTabs = () => {
     } else if (tab === 'Category') {
       navigation.navigate('AllCategories');
     } else if (tab === 'Account') {
-      navigation.navigate('DashboardScreen');
+      if (user) {
+        navigation.navigate("DashboardScreen");
+      } else {
+        navigation.navigate("Login");
+      }
     } else if (tab === 'Message') {
       navigation.navigate('NotificationsScreen');
     }
@@ -84,12 +90,15 @@ const BottomTabs = () => {
     if (item.route) {
       navigation.navigate(item.route);
     } else {
-      console.log(`Service "${item.name}" clicked! (No specific route defined)`);
+      console.log(`Service "${item.name}" clicked!`);
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      {/* Your main screen content goes here */}
+
+      {/* Services Modal */}
       <Modal
         visible={isModalVisible}
         animationType="slide"
@@ -99,7 +108,7 @@ const BottomTabs = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Our Services</Text>
+              <Text style={styles.modalTitle}>Useful Links</Text>
               <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                 <Ionicons name="close" size={28} color="#000" />
               </TouchableOpacity>
@@ -114,7 +123,7 @@ const BottomTabs = () => {
                 >
                   <View style={styles.serviceIconContainer}>
                     <Ionicons name={item.icon} size={30} color="#6D4AAE" />
-                    {item.count > 0 && ( // <-- Conditional rendering of the badge
+                    {item.count > 0 && (
                       <View style={styles.badgeContainer}>
                         <Text style={styles.badgeText}>{item.count}</Text>
                       </View>
@@ -128,6 +137,7 @@ const BottomTabs = () => {
         </View>
       </Modal>
 
+      {/* Bottom Tab Bar */}
       <View style={styles.tabBar}>
         {tabItems.map((tab, index) => {
           const isActive = activeTab === tab.label;
@@ -144,11 +154,7 @@ const BottomTabs = () => {
             >
               {isSpecialTab ? (
                 <Animated.View style={{ transform: [{ scale: serviceIconAnim }] }}>
-                  <Ionicons
-                    name={tab.icon}
-                    size={32}
-                    color={'#fff'}
-                  />
+                  <Ionicons name={tab.icon} size={32} color={'#fff'} />
                 </Animated.View>
               ) : (
                 <Ionicons
@@ -169,35 +175,25 @@ const BottomTabs = () => {
           );
         })}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: '#f5f5f5',
-  },
-  tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-start',
-    marginHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#ffffff',
-    paddingTop: 10,
-    paddingBottom: 1,
-    borderRadius: 35,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 10,
-    minHeight: 60,
-  },
+tabBar: {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+  backgroundColor: '#fff',
+  paddingVertical: Platform.OS === "ios" ? 12 : 10,
+  minHeight: 60,
+},
+
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -215,14 +211,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 8,
-    elevation: 12,
-    transform: [{ translateY: -25 }],
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 2,
+    transform: [{ translateY: -5 }],
     flex: 0,
-    position: 'relative',
-    top: -1,
   },
   tabLabel: {
     fontSize: 10,
@@ -261,9 +255,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#6D4AAE',
   },
   serviceGrid: {
     flexDirection: 'row',
@@ -277,7 +271,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   serviceIconContainer: {
-    position: 'relative', // Required for absolute positioning of the badge
+    position: 'relative',
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -297,7 +291,6 @@ const styles = StyleSheet.create({
     color: '#555',
     marginTop: 4,
   },
-  // New styles for the badge
   badgeContainer: {
     position: 'absolute',
     top: -5,

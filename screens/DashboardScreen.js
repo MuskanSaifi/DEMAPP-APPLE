@@ -134,23 +134,20 @@ const toggleSidebar = () => {
 
 const styles = StyleSheet.create({
   safeAreaContainer: {
+
     flex: 1,
-    backgroundColor: '#f3f4f6', // Very light grey background for overall app
+    backgroundColor: '#FFF', // Very light grey background for overall app
   },
+
   safeArea: {
-    backgroundColor: '#fff', // White header background
-    borderBottomLeftRadius: 12, // Slightly less rounded corners
-    borderBottomRightRadius: 12,
-    paddingBottom: 16,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 10 : 16,
+    backgroundColor: '#FFF', // White header background
+    paddingBottom: 10,
     paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    marginBottom: 5,
-    elevation: 2, // For Android shadow
+    paddingTop:10,
+     borderBottomWidth: 1,
+  borderBottomColor: '#e0e0e0', // light gray (you can change as needed)
   },
+
   header: {
     width: '100%',
   },
@@ -162,9 +159,9 @@ const styles = StyleSheet.create({
   },
 
   screenTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#6D4AAE',
     marginLeft: 12,
     textTransform: 'capitalize',
   },
@@ -172,6 +169,7 @@ const styles = StyleSheet.create({
   hamburger: {
     margin: 5,
   },
+  
   sidebar: {
     position: 'absolute',
     top: 0,
@@ -196,23 +194,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.2)', // Slightly lighter backdrop
   },
   bottomTabsContainer: {
-    position: 'absolute',
+  position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
+    height: 70,
+    backgroundColor: '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#ddd', // Lighter grey border
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    elevation: 6,
+    borderTopColor: '#e0e0e0',
+    elevation: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 8,
   },
 });
 

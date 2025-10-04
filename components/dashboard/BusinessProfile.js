@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import axios from "axios";
+import { List } from 'react-native-paper';
+
 import { RichEditor, RichToolbar, actions } from "react-native-pell-rich-editor";
 import { AuthContext } from "../../context/AuthContext"; // adjust path accordingly
 
@@ -20,7 +22,15 @@ const BusinessProfile = () => {
   const richText = useRef();
 
   const [error, setError] = useState(null);
-
+ const [expanded, setExpanded] = React.useState({
+    company: true,
+    address: false,
+    taxation: false,
+    additional: false,
+  });
+    const handlePress = (section) => {
+    setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
   const allStates = [
     "Andhra Pradesh",
     "Arunachal Pradesh",
@@ -263,6 +273,17 @@ const BusinessProfile = () => {
   // Render form when not loading and no error
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+
+{/* Company Details */}
+  <List.Section>
+<List.Accordion
+  title="Company Details"
+  expanded={expanded.company}
+  onPress={() => handlePress("company")}
+  left={props => <List.Icon {...props} icon="office-building" />}   // company icon
+>
+    <View style={{ paddingHorizontal: 0, paddingLeft: 0 }}>
+
       <Text style={styles.label}>Company Name</Text>
       <TextInput
         style={styles.input}
@@ -323,6 +344,19 @@ const BusinessProfile = () => {
         keyboardType="numeric"
         onChangeText={(text) => handleInputChange("numberOfEmployees", text)}
       />
+      </View>
+  </List.Accordion>
+      </List.Section>
+
+{/* Address Details */}
+      <List.Section>
+    <List.Accordion
+  title="Address Details"
+  expanded={expanded.address}
+  onPress={() => handlePress("address")}
+  left={props => <List.Icon {...props} icon="map-marker" />}
+>
+  <View style={{ paddingHorizontal: 0, paddingLeft: 0 }}>
 
       <Text style={styles.label}>Address</Text>
       <TextInput
@@ -365,6 +399,20 @@ const BusinessProfile = () => {
         value={formData.country}
         editable={false}
       />
+            </View>
+
+    </List.Accordion>
+      </List.Section>
+
+{/* Taxation Details */}
+      <List.Section>
+    <List.Accordion
+  title="Taxation Details"
+  expanded={expanded.taxation}
+  onPress={() => handlePress("taxation")}
+  left={props => <List.Icon {...props} icon="file-document" />}   // taxation icon
+>
+    <View style={{ paddingHorizontal: 0, paddingLeft: 0 }}>
 
       <Text style={styles.label}>GST Number</Text>
       <TextInput
@@ -414,6 +462,20 @@ const BusinessProfile = () => {
         value={formData.vatNumber}
         onChangeText={(text) => handleInputChange("vatNumber", text)}
       />
+                  </View>
+
+      </List.Accordion>
+      </List.Section>
+      
+{/* Additional Details */}
+      <List.Section>
+     <List.Accordion
+  title="Additional Details"
+  expanded={expanded.additional}
+  onPress={() => handlePress("additional")}
+  left={props => <List.Icon {...props} icon="information" />}   // info icon
+>
+    <View style={{ paddingHorizontal: 0, paddingLeft: 0 }}>
 
       <Text style={styles.label}>Business Type (Select multiple)</Text>
       <View style={styles.multiSelectContainer}>
@@ -534,35 +596,29 @@ const BusinessProfile = () => {
         ))}
       </View>
 
-      <Text style={styles.label}>Company Logo</Text>
-      <TouchableOpacity
-        style={styles.fileUploadBtn}
-        onPress={() => handleFileUpload("companyLogo")}
-      >
-        <Text style={styles.fileUploadBtnText}>
-          {formData.companyLogo ? "Change Logo" : "Upload Logo"}
-        </Text>
-      </TouchableOpacity>
+  <Text style={styles.label}>Company Logo URL</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Enter company logo URL"
+  value={formData.companyLogo}
+  onChangeText={(text) => handleInputChange("companyLogo", text)}
+/>
 
-      <Text style={styles.label}>Company Photos</Text>
-      <TouchableOpacity
-        style={styles.fileUploadBtn}
-        onPress={() => handleFileUpload("companyPhotos")}
-      >
-        <Text style={styles.fileUploadBtnText}>
-          {formData.companyPhotos.length > 0 ? "Change Photos" : "Upload Photos"}
-        </Text>
-      </TouchableOpacity>
+<Text style={styles.label}>Company Photos URLs (comma-separated)</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Enter photo URLs, separated by commas"
+  value={formData.companyPhotos.join(', ')}
+  onChangeText={(text) => handleInputChange("companyPhotos", text.split(',').map(url => url.trim()))}
+/>
 
-      <Text style={styles.label}>Company Video</Text>
-      <TouchableOpacity
-        style={styles.fileUploadBtn}
-        onPress={() => handleFileUpload("companyVideo")}
-      >
-        <Text style={styles.fileUploadBtnText}>
-          {formData.companyVideo ? "Change Video" : "Upload Video"}
-        </Text>
-      </TouchableOpacity>
+<Text style={styles.label}>Company Video URL</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Enter company video URL"
+  value={formData.companyVideo}
+  onChangeText={(text) => handleInputChange("companyVideo", text)}
+/>
 
       <Text style={styles.label}>Company Description</Text>
       <RichEditor
@@ -584,7 +640,11 @@ const BusinessProfile = () => {
         ]}
         style={styles.richToolbar}
       />
+                        </View>
 
+   </List.Accordion>
+      </List.Section>
+      
       <View style={{ marginBottom: 40, marginTop: 20 }}>
         <TouchableOpacity
           style={styles.saveButton}
@@ -596,6 +656,7 @@ const BusinessProfile = () => {
           </Text>
         </TouchableOpacity>
       </View>
+      
     </ScrollView>
   );
 };
@@ -634,8 +695,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   multiSelectItemSelected: {
-    backgroundColor: "#007bff",
-    borderColor: "#007bff",
+    backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
   },
   multiSelectItemText: {
     color: "#444",
@@ -676,18 +737,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginTop: 8,
-    marginBottom: 12,
   },
   saveButton: {
     backgroundColor: '#4CAF50',
     paddingVertical: 12,
-    paddingHorizontal: 24,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 3,
-    marginBottom: 20,
-    marginTop: 20,
+    marginBottom: 60,
   },
   saveButtonText: {
     color: '#fff',

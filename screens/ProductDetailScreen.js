@@ -13,10 +13,10 @@ import {
   Dimensions,
   Platform,
   StatusBar,
-  Animated,
+  Animated, 
   Alert,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Buyfrom from '../components/BuyForm';
 import SearchBarWithSuggestions from '../components/SearchBar';
@@ -34,9 +34,13 @@ const { width } = Dimensions.get('window');
 export default function ProductDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute();
+    const isFocused = useIsFocused(); // To help with sidebar closing on blur
   const { productId } = route.params;
-
+  
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
+   const token = useSelector((state) => state.user.token); 
+  const { blockedSellers } = useSelector((state) => state.blocked);
   const { items: wishlistItems, loading: wishlistLoading } = useSelector((state) => state.wishlist);
 
   const [product, setProduct] = useState(null);
@@ -55,16 +59,33 @@ export default function ProductDetailScreen() {
     (item) => item._id === productId || (item.product && item.product._id === productId)
   );
 
+    // Checks if the product's seller is blocked
+  const isSellerBlocked = product?.userId?._id && blockedSellers.includes(product.userId._id);
+
+  // Handles the sidebar toggle state
   const toggleSidebar = () => {
-    const toValue = sidebarVisible ? -width * 0.8 : 0;
+    setSidebarVisible(prev => !prev);
+  };
+
+  // New useEffect to handle the animation based on sidebarVisible state
+  useEffect(() => {
+    const toValue = sidebarVisible ? 0 : -width * 0.8;
     Animated.timing(sidebarX, {
       toValue,
       duration: 300,
       useNativeDriver: true,
-    }).start(() => {
-      setSidebarVisible(!sidebarVisible);
+    }).start();
+  }, [sidebarVisible]);
+
+  // Close sidebar on screen blur
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      if (sidebarVisible) {
+        setSidebarVisible(false);
+      }
     });
-  };
+    return unsubscribe;
+  }, [navigation, sidebarVisible]);
 
   useLayoutEffect(() => {
     StatusBar.setBarStyle('dark-content', true);
@@ -76,30 +97,49 @@ export default function ProductDetailScreen() {
     });
   }, [navigation]);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`https://www.dialexportmart.com/api/products/${productId}`);
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || 'Error fetching product.');
-        }
+  // Fetch product details
+ // 👇 CRITICAL CHANGE 2: Extract fetch logic into a standalone function
+  const fetchProduct = async (id) => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const userIdParam = user?._id ? `?userId=${user._id}` : "";
+      const res = await fetch(`https://www.dialexportmart.com/api/products/${id}${userIdParam}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Error fetching product.');
+      } 
+      
+      // Client-side check for blocked seller (this logic remains correct)
+      if (data.userId && blockedSellers.includes(data.userId._id)) {
+        setError("This product is from a blocked seller and cannot be viewed.");
+        setProduct(null);
+        setRelatedProducts([]);
+        setRelatedCategories([]);
+      } else {
         setProduct(data);
         setRelatedProducts(data.relatedProducts || []);
         setRelatedCategories(data.relatedCategories || []);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        setError(null);
       }
-    };
+    } catch (err) {
+      setError(err.message);
+      setProduct(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+
+  // 👇 CRITICAL CHANGE 3: Update useEffect to call the new fetchProduct function
+  useEffect(() => {
     if (productId) {
-      fetchProduct();
+      fetchProduct(productId); // Now calls the new extracted function
       setHoveredImage(null);
     }
-  }, [productId]);
+  }, [productId, user, blockedSellers]); // blockedSellers change already triggers re-fetch, but the manual call in handleBlockSeller ensures it happens immediately after blocking, even before the Redux state updates propagate fully.
+
 
   useEffect(() => {
     if (product && product.images && product.images.length > 0 && !hoveredImage) {
@@ -107,11 +147,113 @@ export default function ProductDetailScreen() {
     }
   }, [product, hoveredImage]);
 
+
+  // --- Filtering Logic ---
+  const visibleRelatedProducts = relatedProducts.filter(
+    (p) => !blockedSellers.includes(p.userId?._id)
+  );
+
+  const visibleRelatedCategories = relatedCategories.filter(
+    (c) => !blockedSellers.includes(c.userId?._id) // Assuming related categories have a userId if they are product-as-category-display
+  );
+  
+
   const stripHTML = (html) => {
     return html.replace(/<[^>]*>/g, '');
   };
 
+   const handleReportSeller = async (sellerId) => {
+    if (!token) {
+      Alert.alert("Authentication Required", "Please log in first to report a seller.", [
+        { text: "OK", onPress: () => navigation.navigate('Login') }
+      ]);
+      return;
+    }
+    Alert.alert(
+      "Report Seller",
+      "Are you sure you want to report this seller for objectionable content?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Report",
+          onPress: async () => {
+            try {
+              const res = await fetch("https://www.dialexportmart.com/api/seller/report", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  sellerId,
+                  reason: "Objectionable / fake content",
+                }),
+              });
+              const data = await res.json();
+              if (res.ok) {
+                Alert.alert("✅ Success", "Report submitted. Admin will review it.");
+              } else {
+                Alert.alert("Error", data.error || "Something went wrong during reporting.");
+              }
+            } catch (err) {
+              console.error(err);
+              Alert.alert("Network Error", "Please check your connection and try again.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleBlockSeller = async (sellerId) => {
+    if (!token) {
+      Alert.alert("Authentication Required", "Please log in first to block a seller.", [
+        { text: "OK", onPress: () => navigation.navigate('Login') }
+      ]);
+      return;
+    }
+
+    Alert.alert(
+      "Block Seller",
+      "Are you sure you want to block this seller? You will not see their products.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await fetch("https://www.dialexportmart.com/api/seller/block", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ sellerId }),
+              });
+              const data = await res.json();
+              if (res.ok) {
+                Alert.alert("🚫 Blocked", data.message || "Seller blocked successfully.");
+                await fetchProduct(productId); 
+
+              } else {
+                Alert.alert("Error", data.error || "Something went wrong while blocking.");
+              }
+            } catch (err) {
+              console.error(err);
+              Alert.alert("Network Error", "Please check your connection and try again.");
+            }
+          }
+        }
+      ]
+    );
+  };
+  
   const handleWishlistToggle = () => {
+      if (!user) {
+    navigation.navigate('WishlistScreen');
+    return;
+  }
     if (isProductInWishlist) {
       dispatch(removeProductFromWishlist(productId));
     } else {
@@ -137,14 +279,15 @@ export default function ProductDetailScreen() {
     );
   }
 
-  if (error) {
+ if (error || !product || isSellerBlocked) {
+    const message = "This product is not available or is from a blocked seller.";
     return (
       <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
         <View style={styles.searchBarWrapper}>
           <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
         </View>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>{message}</Text>
           <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Text style={styles.backButtonText}>← Go Back</Text>
           </TouchableOpacity>
@@ -171,25 +314,24 @@ export default function ProductDetailScreen() {
         <View style={styles.bottomTabsContainer}>
           <BottomTabs />
         </View>
-      </SafeAreaView>
+      </SafeAreaView>                                                                                 
     );
   }
 
   return (
     <SafeAreaView style={styles.safeAreaContainer} edges={['top', 'left', 'right']}>
-      {/* Sidebar */}
-      <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
-        <Sidebar
-          activeScreen={null}
-          setActiveScreen={() => {}}
-          toggleSidebar={toggleSidebar}
-          navigation={navigation}
-        />
-      </Animated.View>
-
-      {/* Backdrop for sidebar */}
-      {sidebarVisible && (
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
+ {sidebarVisible && isFocused && (
+        <>
+          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
+          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarX }] }]}>
+            <Sidebar
+              activeScreen={null}
+              setActiveScreen={() => {}}
+              toggleSidebar={toggleSidebar}
+              navigation={navigation}
+            />
+          </Animated.View>
+        </>
       )}
 
       {/* Search Bar */}
@@ -232,17 +374,43 @@ export default function ProductDetailScreen() {
           <View style={styles.infoSection}>
             <Text style={styles.productName}>{product.name}</Text>
     {/* Wishlist Button - NOW INSIDE THE IMAGE SECTION */}
-            <TouchableOpacity
-              style={styles.wishlistButton}
-              onPress={handleWishlistToggle}
-              disabled={wishlistLoading}
-            >
-              <Ionicons
-                name={isProductInWishlist ? 'heart' : 'heart-outline'}
-                size={24}
-                color={isProductInWishlist ? 'red' : 'black'}
-              />
-            </TouchableOpacity>
+<View style={styles.actionButtons}>
+  {/* Wishlist */}
+  <TouchableOpacity
+    onPress={handleWishlistToggle}
+    disabled={wishlistLoading}
+    style={[
+      styles.iconButton,
+      isProductInWishlist ? styles.wishlistActive : styles.wishlistInactive,
+    ]}
+  >
+    {wishlistLoading ? (
+      <ActivityIndicator size="small" color="#fff" />
+    ) : (
+      <Ionicons
+        name={isProductInWishlist ? "heart" : "heart-outline"}
+        size={18}
+        color={isProductInWishlist ? "#fff" : "#4b5563"}
+      />
+    )}
+  </TouchableOpacity>
+
+  {/* Report */}
+  <TouchableOpacity
+    onPress={() => handleReportSeller(product?.userId?._id)}
+    style={[styles.iconButton, styles.reportButton]}
+  >
+    <Text style={{ fontSize: 14 }}>🚩</Text>
+  </TouchableOpacity>
+
+  {/* Block */}
+  <TouchableOpacity
+    onPress={() => handleBlockSeller(product?.userId?._id)}
+    style={[styles.iconButton, styles.blockButton]}
+  >
+    <Text style={{ fontSize: 14 }}>🚫</Text>
+  </TouchableOpacity>
+</View>
             <View style={styles.metaInfo}>
               {product.userId?.fullname && <Text style={styles.metaText}>👤 {product.userId.fullname}</Text>}
               {product.userId?.companyName && <Text style={styles.metaText}>🏢 {product.userId.companyName}</Text>}
@@ -420,7 +588,7 @@ export default function ProductDetailScreen() {
           <View style={styles.relatedSection}>
             <Text style={styles.relatedSectionTitle}>Related Products</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedProductsScroll}>
-              {relatedProducts.map((relatedProduct) => (
+              {visibleRelatedProducts.map((relatedProduct) => (
                 <TouchableOpacity
                   key={relatedProduct._id}
                   onPress={() => navigation.push('ProductDetail', { productId: relatedProduct._id })}
@@ -503,8 +671,8 @@ export default function ProductDetailScreen() {
           </View>
         )}
 
-        {/* Related Categories Section */}
-     {relatedCategories.length > 0 && (
+  {/* Related Categories Section */}
+     {visibleRelatedCategories.length > 0 && (
   <View style={styles.relatedSection}>
     <Text style={styles.relatedSectionTitle}>Explore More in Similar Categories</Text>
     <ScrollView
@@ -512,7 +680,7 @@ export default function ProductDetailScreen() {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.relatedCategoriesScroll}
     >
-      {relatedCategories.map((rc) => (
+      {visibleRelatedCategories.map((rc) => (
         
 <TouchableOpacity
   key={rc._id}
@@ -558,9 +726,7 @@ export default function ProductDetailScreen() {
       ))}
     </ScrollView>
   </View>
-)}
-
-        
+)}      
       </ScrollView>
 
       {/* Zoom Modal */}
@@ -598,20 +764,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     position: 'relative', // Add this to make absolute positioning work for children
   },
-  
+  actionButtons: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  marginBottom: 10,
+  gap: 10, // space between icons
+},
+
+iconButton: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "#f1f5f9", // light gray bg
+},
+
+wishlistActive: {
+  backgroundColor: "#ef4444", // red when active
+},
+wishlistInactive: {
+  backgroundColor: "#f1f5f9",
+},
+reportButton: {
+  backgroundColor: "#fef3c7", // light yellow
+},
+blockButton: {
+  backgroundColor: "#fee2e2", // light red
+},
+
   wishlistButton: {
     position: 'absolute',
     top: 2,
     right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.04)', // A semi-transparent background for better visibility
+    backgroundColor: 'rgba(191, 191, 191, 0.13)',
     padding: 8,
     borderRadius: 20,
-    // Add these for iOS and Android
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
     zIndex: 10,
   },
 
