@@ -187,7 +187,7 @@ const Sidebar = ({ activeScreen, toggleSidebar, navigation }) => {
 
             {expanded === 'leads' && (
               <View style={styles.subMenu}>
-                {['Customer Leads', 'Enquiries'].map((sub, i) => (
+                {['Customer Leads'].map((sub, i) => (
                   <TouchableOpacity
                     key={i}
                     style={[

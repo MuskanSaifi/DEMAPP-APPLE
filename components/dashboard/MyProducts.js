@@ -19,10 +19,11 @@ import axios from "axios";
 import Icon from "react-native-vector-icons/FontAwesome";
 import * as ImagePicker from "react-native-image-picker";
 import { Picker } from "@react-native-picker/picker";
+import { MultiSelect } from 'react-native-element-dropdown';
 
 // Assuming LocationSelector is a converted React Native component
 // Make sure this path is correct based on your project structure
-import LocationSelector from "../../components/LocationSelector";
+import LocationSelector from "./components/LocationSelector";
 import { AuthContext } from "../../context/AuthContext"; // adjust path if needed
 
 // Helper function for toasts (basic implementation)
@@ -35,6 +36,19 @@ const showToast = (message, type = "success") => {
     Alert.alert("Notification", message);
   }
 };
+
+const exportMarketOptions = [
+  { label: 'Asia', value: 'Asia' },
+  { label: 'Europe', value: 'Europe' },
+  { label: 'North America', value: 'North America' },
+  { label: 'South America', value: 'South America' },
+  { label: 'Africa', value: 'Africa' },
+  { label: 'Australia', value: 'Australia' },
+  { label: 'Middle East', value: 'Middle East' },
+  { label: 'Eastern Europe', value: 'Eastern Europe' },
+  { label: 'Western Europe', value: 'Western Europe' },
+  { label: 'Central America', value: 'Central America' },
+];
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
@@ -903,11 +917,31 @@ const handleUpdate = async () => {
                         style={styles.picker}
                         itemStyle={styles.pickerItem}
                       >
-                        <Picker.Item label="Kilogram" value="Kilograms" />
-                        <Picker.Item label="Piece" value="Piece/Pieces" />
-                        <Picker.Item label="Meter" value="Meter" />
-                        <Picker.Item label="Ton" value="Ton/Tons" />
-                        <Picker.Item label="Unit" value="Unit/Units" />
+                           <Picker.Item label="Kilogram" value="Kilograms" />
+<Picker.Item label="Gram" value="Grams" />
+<Picker.Item label="Metric Ton" value="Metric Tons" />
+<Picker.Item label="Ton" value="Ton/Tons" />
+<Picker.Item label="Piece" value="Piece/Pieces" />
+<Picker.Item label="Unit" value="Unit/Units" />
+<Picker.Item label="Dozen" value="Dozen" />
+<Picker.Item label="Pair" value="Pairs" />
+<Picker.Item label="Set" value="Set/Sets" />
+<Picker.Item label="Box" value="Box/Boxes" />
+<Picker.Item label="Carton" value="Carton/Cartons" />
+<Picker.Item label="Bag" value="Bag/Bags" />
+<Picker.Item label="Roll" value="Roll/Rolls" />
+<Picker.Item label="Sheet" value="Sheet/Sheets" />
+<Picker.Item label="Meter" value="Meter/Meters" />
+<Picker.Item label="Centimeter" value="Centimeter" />
+<Picker.Item label="Inch" value="Inch/Inches" />
+<Picker.Item label="Square Feet" value="Square Feet" />
+<Picker.Item label="Square Meter" value="Square Meter" />
+<Picker.Item label="Cubic Feet" value="Cubic Feet" />
+<Picker.Item label="Cubic Meter" value="Cubic Meter" />
+<Picker.Item label="Liter" value="Liter/Liters" />
+<Picker.Item label="Milliliter" value="Milliliters" />
+<Picker.Item label="Gallon" value="Gallon/Gallons" />
+<Picker.Item label="Barrel" value="Barrel/Barrels" />
                       </Picker>
                     </View>
                   </View>
@@ -925,9 +959,9 @@ const handleUpdate = async () => {
                 <View style={styles.formGroup}>
                   <Text style={styles.formLabel}>Description</Text>
                   <TextInput
-                    style={[styles.formControl, styles.textArea]}
+                    style={[styles.formControl2, styles.textArea]}
                     multiline
-                    numberOfLines={3}
+                    numberOfLines={10}
                     value={formData.description || ""}
                     onChangeText={(text) => handleChange(text, "description")}
                   />
@@ -963,10 +997,10 @@ const handleUpdate = async () => {
      <View style={styles.pickerContainer}>
                           <Picker
                             selectedValue={
-                              formData.tradeInformation?.supplyUnit || "Per Day"
+                              formData.tradeInformation?.supplyAbility || "Per Day"
                             }
                             onValueChange={(itemValue) =>
-                              handleChange(itemValue, "tradeInformation.supplyUnit")
+                              handleChange(itemValue, "tradeInformation.supplyAbility")
                             }
                             style={styles.picker}
                             itemStyle={styles.pickerItem}
@@ -1037,6 +1071,7 @@ const handleUpdate = async () => {
                           <Picker.Item label="Select" value="" />
                           <Picker.Item label="Free Sample" value="Free Sample" />
                           <Picker.Item label="Paid Sample" value="Paid Sample" />
+                          <Picker.Item label="Not Available" value="Not Available" />
                         </Picker>
                       </View>
                     </View>
@@ -1071,24 +1106,19 @@ const handleUpdate = async () => {
                     <View style={styles.col12}>
                       <Text style={styles.formLabel}>Main Export Market(s)</Text>
                       <View style={styles.pickerContainer}>
-                        <Picker
-                          selectedValue={
-                            formData.tradeInformation?.mainExportMarkets || ""
-                          }
-                          onValueChange={(itemValue) =>
-                            handleChange(
-                              itemValue,
-                              "tradeInformation.mainExportMarkets"
-                            )
-                          }
-                          style={styles.picker}
-                          itemStyle={styles.pickerItem}
-                        >
-                          <Picker.Item label="Select" value="" />
-                          <Picker.Item label="Asia" value="Asia" />
-                          <Picker.Item label="Europe" value="Europe" />
-                          <Picker.Item label="North America" value="North America" />
-                        </Picker>
+       <MultiSelect
+  style={styles.dropdown}
+  data={exportMarketOptions}
+  labelField="label"
+  valueField="value"
+  placeholder="Select Main Export Markets"
+  search
+  searchPlaceholder="Search..."
+  value={formData.tradeInformation?.mainExportMarkets || []}
+  onChange={(item) =>
+    handleChange(item, "tradeInformation.mainExportMarkets")
+  }
+/>
                       </View>
                     </View>
 
@@ -1136,6 +1166,7 @@ const handleUpdate = async () => {
                           <Picker.Item label="Select" value="" />
                           <Picker.Item label="T/T" value="T/T" />
                           <Picker.Item label="L/C" value="L/C" />
+                          <Picker.Item label="D/P" value="D/P" />
                         </Picker>
                       </View>
                     </View>
@@ -1159,6 +1190,9 @@ const handleUpdate = async () => {
                           <Picker.Item label="Select" value="" />
                           <Picker.Item label="All India" value="All India" />
                           <Picker.Item label="North India" value="North India" />
+                          <Picker.Item label="South India" value="South India" />
+                          <Picker.Item label="East India" value="East India" />
+                          <Picker.Item label="West India" value="West India" />
                         </Picker>
                       </View>
                     </View>
@@ -1200,17 +1234,16 @@ const handleUpdate = async () => {
                         }
                       />
                     </View>
-                    <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Thickness</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        keyboardType="numeric"
-                        value={formData.specifications?.thickness || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.thickness")
-                        }
-                      />
-                    </View>
+          <View style={styles.col12}>
+  <Text style={styles.formLabel}>Thickness</Text>
+  <TextInput
+    style={styles.formControl}
+    keyboardType="numeric"
+    value={formData.specifications?.thickness?.toString() || ""}
+    onChangeText={(text) => handleChange("specifications.thickness", text)}
+  />
+</View>
+
 
                       <View style={styles.col12}>
                       <Text style={styles.formLabel}>Thickness Unit</Text>
@@ -1240,17 +1273,16 @@ const handleUpdate = async () => {
                   </View>
 
                   <View style={styles.row}>
-                          <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Thickness Tolerance</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        keyboardType="numeric"
-                        value={formData.specifications?.thicknessTolerance || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.thicknessTolerance")
-                        }
-                      />
-                    </View>
+                <View style={styles.col12}>
+  <Text style={styles.formLabel}>Thickness Tolerance</Text>
+  <TextInput
+    style={styles.formControl}
+    keyboardType="numeric"
+    value={formData.specifications?.thicknessTolerance?.toString() || ""}
+    onChangeText={(text) => handleChange("specifications.thicknessTolerance", text)}
+  />
+</View>
+
             <View style={styles.col12}>
                       <Text style={styles.formLabel}>Thickness Tolerance Unit</Text>
                       <View style={styles.pickerContainer}>
@@ -1277,17 +1309,16 @@ const handleUpdate = async () => {
                   </View>
 
                   <View style={styles.row}>
-                           <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Width</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        keyboardType="numeric"
-                        value={formData.specifications?.width || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.width")
-                        }
-                      />
-                    </View>
+                       <View style={styles.col12}>
+  <Text style={styles.formLabel}>Width</Text>
+  <TextInput
+    style={styles.formControl}
+    keyboardType="numeric"
+    value={formData.specifications?.width?.toString() || ""}
+    onChangeText={(text) => handleChange("specifications.width", text)}
+  />
+</View>
+
                          <View style={styles.col12}>
                       <Text style={styles.formLabel}>Width Unit</Text>
                       <View style={styles.pickerContainer}>
@@ -1314,18 +1345,15 @@ const handleUpdate = async () => {
                   </View>
 
                   <View style={styles.row}>
-                    <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Width Tolerance</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        keyboardType="numeric"
-                        value={formData.specifications?.widthTolerance || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.widthTolerance")
-                        }
-                      />
-                    </View>
-                    
+<View style={styles.col12}>
+  <Text style={styles.formLabel}>Width Tolerance</Text>
+  <TextInput
+    style={styles.formControl}
+    keyboardType="numeric"
+    value={formData.specifications?.widthTolerance?.toString() || ""}
+    onChangeText={(text) => handleChange("specifications.widthTolerance", text)}
+  />
+</View>                                  
                     <View style={styles.col12}>
                       <Text style={styles.formLabel}>Width Unit</Text>
                       <View style={styles.pickerContainer}>
@@ -1355,16 +1383,15 @@ const handleUpdate = async () => {
 
                       <View style={styles.row}>
                     <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Length</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        keyboardType="numeric"
-                        value={formData.specifications?.length || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.length")
-                        }
-                      />
-                    </View>
+  <Text style={styles.formLabel}>Length</Text>
+  <TextInput
+    style={styles.formControl}
+    keyboardType="numeric"
+    value={formData.specifications?.length?.toString() || ""}
+    onChangeText={(text) => handleChange("specifications.length", text)}
+  />
+</View>
+
                      <View style={styles.col12}>
                       <Text style={styles.formLabel}>Length Unit</Text>
                       <View style={styles.pickerContainer}>
@@ -1394,16 +1421,15 @@ const handleUpdate = async () => {
 
                   <View style={styles.row}>
                     <View style={styles.col12}>
-                      <Text style={styles.formLabel}>Weight</Text>
-                      <TextInput
-                      keyboardType="numeric"
-                        style={styles.formControl}
-                        value={formData.specifications?.weight || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.weight")
-                        }
-                      />
-                    </View>
+  <Text style={styles.formLabel}>Weight</Text>
+  <TextInput
+    keyboardType="numeric"
+    style={styles.formControl}
+    placeholder="Enter weight"
+    value={formData.specifications?.weight?.toString() || ""}
+    onChangeText={(text) => handleChange(text, "specifications.weight")}
+  />
+</View>
 
                          <View style={styles.col12}>
                       <Text style={styles.formLabel}>Weight Unit</Text>
@@ -1422,9 +1448,9 @@ const handleUpdate = async () => {
                           itemStyle={styles.pickerItem}
                         >
                           <Picker.Item label="Select" value="" />
-                          <Picker.Item label="mm" value="mm" />
-                          <Picker.Item label="cm" value="cm" />
-                          <Picker.Item label="inch" value="inch" />
+                          <Picker.Item label="kg" value="kg" />
+                          <Picker.Item label="g" value="g" />
+                          <Picker.Item label="lbs" value="lbs" />
                         </Picker>
                       </View>
                     </View>
@@ -1432,13 +1458,26 @@ const handleUpdate = async () => {
                       <View style={styles.row}>
                     <View style={styles.col12}>
                       <Text style={styles.formLabel}>Metals Type</Text>
-                      <TextInput
-                        style={styles.formControl}
-                        value={formData.specifications?.metalsType || ""}
-                        onChangeText={(text) =>
-                          handleChange(text, "specifications.metalsType")
-                        }
-                      />
+                     <TextInput
+  style={styles.formControl}
+    placeholder="e.g., Gold, Silver"
+    value={
+      Array.isArray(formData.specifications?.metalsType)
+        ? formData.specifications.metalsType.join(", ")
+        : formData.specifications?.metalsType || ""
+    }
+    onChangeText={(text) => {
+      const metalsArray = text.split(",").map((s) => s.trim());
+      setFormData((prev) => ({
+        ...prev,
+        specifications: {
+          ...prev.specifications,
+          metalsType: metalsArray,
+        },
+      }));
+    }}
+    placeholderTextColor="#888"
+  />
                     </View>
                     </View>
                   <View style={styles.row}>
@@ -1466,8 +1505,8 @@ const handleUpdate = async () => {
                   </View>
 
                   <View style={styles.row}>
-      <View style={styles.col6}>
-                      <Text style={styles.formLabel}>Product Name</Text>
+      <View style={styles.col12}>
+                      <Text style={styles.formLabel}>Product Name (Specification)</Text>
                       <TextInput
                         style={styles.formControl}
                         value={formData.specifications?.productName || ""}
@@ -1476,7 +1515,7 @@ const handleUpdate = async () => {
                         }
                       />
                     </View>
-                    <View style={styles.col6}>
+                    <View style={styles.col12}>
                       <Text style={styles.formLabel}>Color</Text>
                       <TextInput
                         style={styles.formControl}
@@ -1573,7 +1612,7 @@ const handleUpdate = async () => {
                     </View>
 
                     <View style={styles.col6}>
-                      <Text style={styles.formLabel}>Metal Type</Text>
+                      <Text style={styles.formLabel}>Metal Type (Specification)</Text>
                       <TextInput
                         style={styles.formControl}
                         value={formData.specifications?.metalType || ""}
@@ -2339,6 +2378,15 @@ dateTimeValue: {
     height: 50,
     backgroundColor: '#fdfdfd',
   },
+    formControl2: {
+    borderWidth: 1,
+    borderColor: "#dcdfe6",
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 15,
+    height: 200,
+    backgroundColor: '#fdfdfd',
+  },
   textArea: {
     minHeight: 100, // Taller text area
     textAlignVertical: "top",
@@ -2521,6 +2569,3 @@ pickerItem: {
   },
 });
 export default AllProducts;
-
-
-

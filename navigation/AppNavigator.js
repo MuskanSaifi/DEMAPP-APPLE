@@ -17,7 +17,7 @@ import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import SellerProductsScreen from '../screens/SellerProductsScreen';
 import WishlistScreen from '../screens/WishlistScreen';
-import Notifications from '../screens/NotificationsScreen';
+import Notifications from '../screens/NotificationsScreen'; 
 import TermsScreen from '../screens/TermsScreen';
 
 const Stack = createNativeStackNavigator();
@@ -40,15 +40,15 @@ return (
       options={{ title: "Browse All Categories", headerTintColor: "#000" }}
     />
     <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
+    <Stack.Screen name="PricingPlans" component={PricingPlans} />
+    <Stack.Screen name="TermsScreen" component={TermsScreen} />
+    <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
+    <Stack.Screen name="SubcategoryScreen" component={SubcategoryScreen} />
     <Stack.Screen
       name="SellerProductsScreen"
       component={SellerProductsScreen}
       options={{ headerShown: false }}
     />
-    <Stack.Screen name="PricingPlans" component={PricingPlans} />
-    <Stack.Screen name="TermsScreen" component={TermsScreen} />
-    <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
-    <Stack.Screen name="SubcategoryScreen" component={SubcategoryScreen} />
     <Stack.Screen
       name="ProductsScreen"
       component={ProductsScreen}

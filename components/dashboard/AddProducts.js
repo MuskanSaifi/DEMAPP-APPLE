@@ -675,6 +675,242 @@ const AddProduct = () => {
         <View style={styles.tabContent}>
           <Text style={styles.sectionTitle}>Product Specifications</Text>
           <View style={styles.gridContainer}>
+            
+      {/* Product Type */}
+      <View style={styles.gridItem}>
+        <Text style={styles.label}>Product Type</Text>
+        <Picker
+          style={styles.picker}
+          selectedValue={product.specifications.productType || ""}
+          onValueChange={(itemValue) =>
+            handleNestedChange("specifications", null, "productType", itemValue)
+          }
+        >
+          <Picker.Item label="Select Product Type" value="" />
+          <Picker.Item label="Furniture Hardware" value="Furniture Hardware" />
+          <Picker.Item label="Furniture Accessories" value="Furniture Accessories" />
+          <Picker.Item label="Furniture Parts" value="Furniture Parts" />
+          <Picker.Item label="Other" value="Other" />
+        </Picker>
+      </View>
+
+      {/* Material */}
+      <View style={styles.gridItem}>
+        <Text style={styles.label}>Material</Text>
+        <Picker
+          style={styles.picker}
+          selectedValue={product.specifications.material || ""}
+          onValueChange={(itemValue) =>
+            handleNestedChange("specifications", null, "material", itemValue)
+          }
+        >
+       <Picker.Item label="Select Material" value="" />
+<Picker.Item label="Acrylic" value="Acrylic" />
+<Picker.Item label="Aluminum" value="Aluminum" />
+<Picker.Item label="Bamboo" value="Bamboo" />
+<Picker.Item label="Brass" value="Brass" />
+<Picker.Item label="Bronze" value="Bronze" />
+<Picker.Item label="Canvas" value="Canvas" />
+<Picker.Item label="Ceramic" value="Ceramic" />
+<Picker.Item label="Clay" value="Clay" />
+<Picker.Item label="Copper" value="Copper" />
+<Picker.Item label="Cotton" value="Cotton" />
+<Picker.Item label="Fabric" value="Fabric" />
+<Picker.Item label="Fiber" value="Fiber" />
+<Picker.Item label="Foam" value="Foam" />
+<Picker.Item label="Glass" value="Glass" />
+<Picker.Item label="Iron" value="Iron" />
+<Picker.Item label="Jute" value="Jute" />
+<Picker.Item label="Leather" value="Leather" />
+<Picker.Item label="Marble" value="Marble" />
+<Picker.Item label="Metal" value="Metal" />
+<Picker.Item label="Paper" value="Paper" />
+<Picker.Item label="Plastic" value="Plastic" />
+<Picker.Item label="Polyresin" value="Polyresin" />
+<Picker.Item label="PVC" value="PVC" />
+<Picker.Item label="Resin" value="Resin" />
+<Picker.Item label="Silk" value="Silk" />
+<Picker.Item label="Stainless Steel" value="Stainless Steel" />
+<Picker.Item label="Stone" value="Stone" />
+<Picker.Item label="Terracotta" value="Terracotta" />
+<Picker.Item label="Velvet" value="Velvet" />
+<Picker.Item label="Wood" value="Wood" />
+<Picker.Item label="Wool" value="Wool" />
+<Picker.Item label="Zinc" value="Zinc" />
+<Picker.Item label="Other" value="Other" />
+
+        </Picker>
+      </View>
+
+      {/* Finish */}
+      <View style={styles.gridItem2}>
+        <Text style={styles.label}>Finish</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Finish"
+          value={product.specifications.finish || ""}
+          onChangeText={(text) =>
+            handleNestedChange("specifications", null, "finish", text)
+          }
+        />
+      </View>
+
+{/* Thickness Tolerance */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Thickness Tolerance</Text>
+  <TextInput
+    style={styles.input}
+    keyboardType="numeric"
+    placeholder="Tolerance"
+    value={product.specifications.thicknessTolerance || ""}
+    onChangeText={(text) =>
+      handleNestedChange("specifications", null, "thicknessTolerance", text)
+    }
+  />
+</View>
+
+{/* Thickness Tolerance Unit */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Tolerance Unit</Text>
+  <Picker
+    style={styles.picker}
+    selectedValue={product.specifications.thicknessToleranceUnit || ""}
+    onValueChange={(itemValue) =>
+      handleNestedChange("specifications", null, "thicknessToleranceUnit", itemValue)
+    }
+  >
+    <Picker.Item label="Select" value="" />
+    <Picker.Item label="Meter" value="Meter" />
+    <Picker.Item label="Micrometers (um)" value="Micrometers (um)" />
+    <Picker.Item label="Gauge" value="Gauge" />
+    <Picker.Item label="Feet (ft)" value="Feet (ft)" />
+  </Picker>
+</View>
+
+
+{/* Width */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Width</Text>
+  <TextInput
+    style={styles.input}
+    keyboardType="numeric"
+    placeholder="Width"
+    value={product.specifications.width || ""}
+    onChangeText={(text) =>
+      handleNestedChange("specifications", null, "width", text)
+    }
+  />
+</View>
+
+{/* Width Unit */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Width Unit</Text>
+  <Picker
+    style={styles.picker}
+    selectedValue={product.specifications.widthUnit || ""}
+    onValueChange={(itemValue) =>
+      handleNestedChange("specifications", null, "widthUnit", itemValue)
+    }
+  >
+    <Picker.Item label="Select" value="" />
+    <Picker.Item label="Meter" value="Meter" />
+    <Picker.Item label="Centimeter" value="Centimeter" />
+  </Picker>
+</View>
+
+
+{/* Length */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Length</Text>
+  <TextInput
+    style={styles.input}
+    keyboardType="numeric"
+    placeholder="Length"
+    value={product.specifications.length || ""}
+    onChangeText={(text) =>
+      handleNestedChange("specifications", null, "length", text)
+    }
+  />
+</View>
+
+{/* Length Unit */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Length Unit</Text>
+  <Picker
+    style={styles.picker}
+    selectedValue={product.specifications.lengthUnit || ""}
+    onValueChange={(itemValue) =>
+      handleNestedChange("specifications", null, "lengthUnit", itemValue)
+    }
+  >
+    <Picker.Item label="Select" value="" />
+    <Picker.Item label="Meter" value="Meter" />
+    <Picker.Item label="Centimeter" value="Centimeter" />
+  </Picker>
+</View>
+
+
+{/* Weight */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Weight</Text>
+  <TextInput
+    style={styles.input}
+    keyboardType="numeric"
+    placeholder="Weight"
+    value={product.specifications.weight || ""}
+    onChangeText={(text) =>
+      handleNestedChange("specifications", null, "weight", text)
+    }
+  />
+</View>
+
+{/* Weight Unit */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Weight Unit</Text>
+  <Picker
+    style={styles.picker}
+    selectedValue={product.specifications.weightUnit || ""}
+    onValueChange={(itemValue) =>
+      handleNestedChange("specifications", null, "weightUnit", itemValue)
+    }
+  >
+    <Picker.Item label="Select" value="" />
+    <Picker.Item label="Kg" value="Kilograms" />
+    <Picker.Item label="Grams" value="Grams" />
+    <Picker.Item label="Mg" value="Mg" />
+  </Picker>
+</View>
+
+
+      {/* Metals Type (comma separated for now) */}
+      <View style={styles.gridItem}>
+        <Text style={styles.label}>Metals Type</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g. Aluminum, Steel, Iron"
+          value={
+            Array.isArray(product.specifications.metalsType)
+              ? product.specifications.metalsType.join(", ")
+              : product.specifications.metalsType || ""
+          }
+          onChangeText={(text) =>
+            handleNestedChange("specifications", null, "metalsType", text.split(",").map(t => t.trim()))
+          }
+        />
+      </View>
+
+      {/* Shape */}
+      <View style={styles.gridItem}>
+        <Text style={styles.label}>Shape</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Shape"
+          value={product.specifications.shape || ""}
+          onChangeText={(text) =>
+            handleNestedChange("specifications", null, "shape", text)
+          }
+        />
+      </View>
             {/* Size */}
             <View style={styles.gridItem}>
               <Text style={styles.label}>Size</Text>
@@ -699,39 +935,41 @@ const AddProduct = () => {
               />
             </View>
 
-            {/* Thickness & Unit */}
-            <View style={styles.gridItem2}>
-              <Text style={styles.label}>Thickness</Text>
-              <View style={styles.row}>
-                <TextInput
-                  style={[styles.input, { flex: 1 }]}
-                  keyboardType="number-pad"
-                  name="thickness"
-                  value={product.specifications.thickness}
-                  onChangeText={(text) => handleNestedChange('specifications', null, 'thickness', text)}
-                  placeholder="Thickness"
-                  min="0"
-                  step="any"
-                />
-                <View style={styles.gridItem}>
-                  <Picker
-                    style={styles.picker}
-                    selectedValue={product.specifications.thicknessUnit}
-                    onValueChange={(itemValue) =>
-                      handleNestedChange('specifications', null, 'thicknessUnit', itemValue)
-                    }>
-                    <Picker.Item label="Select" value="" />
-               <Picker.Item label="Meter" value="Meter" />
-<Picker.Item label="Centimeter (cm)" value="Centimeter (cm)" />
-<Picker.Item label="Millimeter (mm)" value="Millimeter (mm)" />
-<Picker.Item label="Micrometer (µm)" value="Micrometer (µm)" />
-<Picker.Item label="Nanometer (nm)" value="Nanometer (nm)" />
-<Picker.Item label="Inch (in)" value="Inch (in)" />
-<Picker.Item label="Feet (ft)" value="Feet (ft)" />
-                  </Picker>
-                </View>
-              </View>
-            </View>
+  {/* Thickness */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Thickness</Text>
+  <TextInput
+    style={styles.input}
+    keyboardType="number-pad"
+    placeholder="Thickness"
+    value={product.specifications.thickness || ""}
+    onChangeText={(text) =>
+      handleNestedChange("specifications", null, "thickness", text)
+    }
+  />
+</View>
+
+{/* Thickness Unit */}
+<View style={styles.gridItem2}>
+  <Text style={styles.label}>Thickness Unit</Text>
+  <Picker
+    style={styles.picker}
+    selectedValue={product.specifications.thicknessUnit || ""}
+    onValueChange={(itemValue) =>
+      handleNestedChange("specifications", null, "thicknessUnit", itemValue)
+    }
+  >
+    <Picker.Item label="Select" value="" />
+    <Picker.Item label="Meter" value="Meter" />
+    <Picker.Item label="Centimeter (cm)" value="Centimeter (cm)" />
+    <Picker.Item label="Millimeter (mm)" value="Millimeter (mm)" />
+    <Picker.Item label="Micrometer (µm)" value="Micrometer (µm)" />
+    <Picker.Item label="Nanometer (nm)" value="Nanometer (nm)" />
+    <Picker.Item label="Inch (in)" value="Inch (in)" />
+    <Picker.Item label="Feet (ft)" value="Feet (ft)" />
+  </Picker>
+</View>
+
 
             {/* Color */}
             <View style={styles.gridItem2}>

@@ -642,12 +642,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
-  bottomTabsContainer: {
-    position: 'absolute',
+    bottomTabsContainer: {
+    position: 'absolute', // Use 'absolute' for fixed positioning
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 20,
+    height: 70, // Consistent height
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: -2 },
+    shadowRadius: 8,
   },
    sidebar: {
     position: 'absolute',
