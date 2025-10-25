@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   richEditor: {
-    minHeight: 150,
+    minHeight: 60,
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
@@ -745,7 +745,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 3,
-    marginBottom: 60,
+    marginBottom: 50,
   },
   saveButtonText: {
     color: '#fff',

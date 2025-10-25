@@ -686,11 +686,106 @@ const AddProduct = () => {
             handleNestedChange("specifications", null, "productType", itemValue)
           }
         >
-          <Picker.Item label="Select Product Type" value="" />
-          <Picker.Item label="Furniture Hardware" value="Furniture Hardware" />
-          <Picker.Item label="Furniture Accessories" value="Furniture Accessories" />
-          <Picker.Item label="Furniture Parts" value="Furniture Parts" />
-          <Picker.Item label="Other" value="Other" />
+      <Picker.Item label="Select Product Type" value="" />
+
+{/* Industrial Products */}
+<Picker.Item label="Industrial Machinery" value="Industrial Machinery" />
+<Picker.Item label="Tools & Equipment" value="Tools & Equipment" />
+<Picker.Item label="Electrical Goods" value="Electrical Goods" />
+<Picker.Item label="Electronic Components" value="Electronic Components" />
+<Picker.Item label="Power & Energy" value="Power & Energy" />
+<Picker.Item label="Construction Equipment" value="Construction Equipment" />
+<Picker.Item label="Hydraulics & Pneumatics" value="Hydraulics & Pneumatics" />
+
+{/* Home & Furniture */}
+<Picker.Item label="Furniture" value="Furniture" />
+<Picker.Item label="Home Decor" value="Home Decor" />
+<Picker.Item label="Lighting Products" value="Lighting Products" />
+<Picker.Item label="Kitchenware & Cookware" value="Kitchenware & Cookware" />
+<Picker.Item label="Bathroom Accessories" value="Bathroom Accessories" />
+<Picker.Item label="Home Appliances" value="Home Appliances" />
+
+{/* Fashion & Apparel */}
+<Picker.Item label="Men Clothing" value="Men Clothing" />
+<Picker.Item label="Women Clothing" value="Women Clothing" />
+<Picker.Item label="Kids Wear" value="Kids Wear" />
+<Picker.Item label="Footwear" value="Footwear" />
+<Picker.Item label="Bags & Luggage" value="Bags & Luggage" />
+<Picker.Item label="Textiles & Fabrics" value="Textiles & Fabrics" />
+<Picker.Item label="Fashion Accessories" value="Fashion Accessories" />
+
+{/* Food & Agriculture */}
+<Picker.Item label="Food & Beverages" value="Food & Beverages" />
+<Picker.Item label="Spices & Condiments" value="Spices & Condiments" />
+<Picker.Item label="Fruits & Vegetables" value="Fruits & Vegetables" />
+<Picker.Item label="Dairy Products" value="Dairy Products" />
+<Picker.Item label="Agricultural Equipment" value="Agricultural Equipment" />
+<Picker.Item label="Seeds & Fertilizers" value="Seeds & Fertilizers" />
+
+{/* Chemicals & Minerals */}
+<Picker.Item label="Chemicals" value="Chemicals" />
+<Picker.Item label="Pharmaceutical Raw Materials" value="Pharmaceutical Raw Materials" />
+<Picker.Item label="Fertilizers & Pesticides" value="Fertilizers & Pesticides" />
+<Picker.Item label="Metals & Minerals" value="Metals & Minerals" />
+<Picker.Item label="Plastic & Rubber" value="Plastic & Rubber" />
+
+{/* Handicrafts & Gifts */}
+<Picker.Item label="Handicrafts" value="Handicrafts" />
+<Picker.Item label="Marble & Stone Items" value="Marble & Stone Items" />
+<Picker.Item label="Religious Statues" value="Religious Statues" />
+<Picker.Item label="Decorative Items" value="Decorative Items" />
+<Picker.Item label="Gifts & Souvenirs" value="Gifts & Souvenirs" />
+
+{/* Electronics & Mobile */}
+<Picker.Item label="Mobiles & Accessories" value="Mobiles & Accessories" />
+<Picker.Item label="Computers & Laptops" value="Computers & Laptops" />
+<Picker.Item label="Security Systems" value="Security Systems" />
+<Picker.Item label="CCTV & Surveillance" value="CCTV & Surveillance" />
+<Picker.Item label="Consumer Electronics" value="Consumer Electronics" />
+
+{/* Beauty & Personal Care */}
+<Picker.Item label="Cosmetics & Beauty Products" value="Cosmetics & Beauty Products" />
+<Picker.Item label="Personal Care Products" value="Personal Care Products" />
+<Picker.Item label="Health & Wellness" value="Health & Wellness" />
+<Picker.Item label="Medicines & Drugs" value="Medicines & Drugs" />
+
+{/* Automobile & Transportation */}
+<Picker.Item label="Automobile Parts" value="Automobile Parts" />
+<Picker.Item label="Bikes & Scooters" value="Bikes & Scooters" />
+<Picker.Item label="Cars & Vehicles" value="Cars & Vehicles" />
+<Picker.Item label="Tyres & Tubes" value="Tyres & Tubes" />
+<Picker.Item label="Transport Services" value="Transport Services" />
+
+{/* Packaging & Printing */}
+<Picker.Item label="Packaging Materials" value="Packaging Materials" />
+<Picker.Item label="Printing Services" value="Printing Services" />
+<Picker.Item label="Labels & Stickers" value="Labels & Stickers" />
+<Picker.Item label="Paper Products" value="Paper Products" />
+
+{/* Construction & Real Estate */}
+<Picker.Item label="Building Materials" value="Building Materials" />
+<Picker.Item label="Cement & Sand" value="Cement & Sand" />
+<Picker.Item label="Tiles & Flooring" value="Tiles & Flooring" />
+<Picker.Item label="Real Estate" value="Real Estate" />
+
+{/* Services */}
+<Picker.Item label="IT Services" value="IT Services" />
+<Picker.Item label="Web Development" value="Web Development" />
+<Picker.Item label="Digital Marketing" value="Digital Marketing" />
+<Picker.Item label="Consultancy Services" value="Consultancy Services" />
+<Picker.Item label="Education & Training" value="Education & Training" />
+<Picker.Item label="Financial Services" value="Financial Services" />
+
+{/* Miscellaneous */}
+<Picker.Item label="Toys & Games" value="Toys & Games" />
+<Picker.Item label="Sports Goods" value="Sports Goods" />
+<Picker.Item label="Pet Products" value="Pet Products" />
+<Picker.Item label="Stationery" value="Stationery" />
+<Picker.Item label="Gems & Jewelry" value="Gems & Jewelry" />
+<Picker.Item label="Leather Products" value="Leather Products" />
+<Picker.Item label="Safety Equipment" value="Safety Equipment" />
+<Picker.Item label="Other" value="Other" />
+
         </Picker>
       </View>
 

@@ -5,16 +5,19 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
   Alert
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from "@react-navigation/native";
 
 const AllPayments = () => {
   const [paymentDetail, setPaymentDetail] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigation = useNavigation();
 
   useEffect(() => {
     getPayment();
@@ -75,10 +78,20 @@ const AllPayments = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      <View style={styles.totalPaymentsCard}>
-        <Text style={styles.totalLabel}>Total Payments Done</Text>
-        <Text style={styles.totalNumber}>{getTotalPayments()}</Text>
-      </View>
+<View style={styles.totalPaymentsCard}>
+  <Text style={styles.totalLabel}>Total Payments Done</Text>
+  <Text style={styles.totalNumber}>{getTotalPayments()}</Text>
+
+{/* Payment Link Button */}
+      <TouchableOpacity
+        style={styles.paymentLinkContainer}
+        onPress={() => navigation.navigate("PricingPlans")}
+      >
+        <Icon name="link-variant" size={22} color="#fff" style={{ marginRight: 6 }} />
+        <Text style={styles.paymentLinkText}>Payment Link</Text>
+      </TouchableOpacity>
+</View>
+
 
       {paymentDetail?.userPackage?.length > 0 ? (
         <View style={styles.packageCard}>
@@ -331,6 +344,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4A5568',
   },
+  paymentLinkContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 14,
+  paddingVertical: 8,
+  paddingHorizontal: 16,
+  backgroundColor: '#5A67D8',
+  borderWidth: 1,
+  borderColor: '#fff',
+  borderRadius: 10,
+},
+paymentLinkText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
 });
 
 
