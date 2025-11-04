@@ -1,3 +1,4 @@
+// components/dashboard/Sidebar.js
 import React, { useState, useContext, useEffect } from 'react';
 import {
   View,
@@ -47,7 +48,6 @@ const Sidebar = ({ activeScreen, setActiveScreen, toggleSidebar,  navigation }) 
           setLoading(false);
         }
       };
-
 
   return (
     <View style={styles.overlay}>
@@ -281,7 +281,6 @@ nameText: {
   color: "#1F2937",
 },
 
-
   overlay: {
     flex: 1,
     flexDirection: 'row',
@@ -292,9 +291,9 @@ nameText: {
     right: 0,
     zIndex: 999,
   },
+  
   sidebar: {
     backgroundColor: '#f9f9f9',
-    paddingVertical: 60,
     paddingHorizontal: 20,
     width: 390,
     height: '100%',

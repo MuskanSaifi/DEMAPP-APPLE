@@ -92,6 +92,7 @@ const ProductsScreen = () => {
   // Redux hooks
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+const buyer = useSelector((state) => state.buyer.buyer);
 
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const wishlistLoading = useSelector((state) => state.wishlist.loading);
@@ -200,12 +201,20 @@ const ProductsScreen = () => {
     navigation.push("ProductsScreen", { productslug: product.productslug });
   };
 
+ // ✅ Updated Wishlist Toggle (for Buyer + User)
   const toggleWishlist = (product) => {
     const isWishlisted = wishlistItems.some((item) => item._id === product._id);
-    if (!user) {
-      navigation.navigate("WishlistScreen");
+
+    // If neither user nor buyer is logged in
+    if (!user && !buyer) {
+      Alert.alert(
+        "Login Required",
+        "Please login first to manage your wishlist.",
+        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+      );
       return;
     }
+
     if (isWishlisted) {
       dispatch(removeProductFromWishlist(product._id));
     } else {

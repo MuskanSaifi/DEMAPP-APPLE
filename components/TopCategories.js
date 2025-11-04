@@ -149,19 +149,22 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     // marginHorizontal removed as it's now in contentContainerStyle
   },
-  item: {
-    width: ITEM_WIDTH,
-    alignItems: 'center',
-    backgroundColor: '#ffffff', // Keep item background white
-    borderRadius: 10,
-    paddingVertical: 8, // Increased padding for better appearance
-    paddingHorizontal: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.08, // Slightly less opaque shadow
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
+item: {
+  width: ITEM_WIDTH,
+  alignItems: 'center',
+  backgroundColor: '#ffffff',
+  borderRadius: 10,
+  paddingVertical: 8,
+  paddingHorizontal: 4,
+
+  // 🌟 Balanced shadow on all sides
+  elevation: 3, // Android shadow depth
+  shadowColor: '#000',
+  shadowOpacity: 0.06, // slightly stronger for even visibility
+  shadowRadius: 6, // smoother spread
+  shadowOffset: { width: 0, height: 0 }, // 👈 makes it equal on all sides
+},
+
   iconWrapper: {
     // backgroundColor will be set dynamically inline
     borderRadius: 25, // Circular background

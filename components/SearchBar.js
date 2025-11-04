@@ -29,7 +29,7 @@ const SearchBarWithSuggestions = ({ toggleSidebar }) => {
   const { token, isLoading: authLoading } = useContext(AuthContext);
   const [userDetail, setUserDetail] = useState(null);
   const [loading, setLoading] = useState(false);
-
+const buyer = useSelector((state) => state.buyer.buyer);
   // Use useSelector to get the wishlist items and count
   const wishlistItems = useSelector((state) => state.wishlist.items);
   const wishlistCount = wishlistItems.length;
@@ -114,7 +114,7 @@ const SearchBarWithSuggestions = ({ toggleSidebar }) => {
   );
 
   return (
-    <SafeAreaView style={styles.wrapper} edges={['top']}>
+<SafeAreaView style={styles.wrapper} edges={['left', 'right']}>
       <View style={styles.searchHeaderContainer}>
         <View style={styles.searchContainer}>
           <TouchableOpacity onPress={() => navigation.navigate('Home')}>
@@ -161,19 +161,49 @@ const SearchBarWithSuggestions = ({ toggleSidebar }) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={toggleSidebar} style={styles.rightIconWrapper}>
-          {userDetail?.icon ? (
-            <Image source={{ uri: userDetail.icon }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.placeholderAvatar}>
-              <Text style={styles.avatarText}>
-                {userDetail?.fullname?.charAt(0).toUpperCase() || "U"}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+<TouchableOpacity
+  onPress={() => {
+    if (buyer || token) {
+      // ✅ either buyer or seller logged in
+      toggleSidebar();
+    } else {
+      // 🚫 no one logged in — go to BuySell
+      navigation.navigate("BuySell");
+    }
+  }}
+  style={styles.rightIconWrapper}
+>
+{buyer ? (
+  // If buyer is logged in
+  buyer.profilePic ? (
+    <Image source={{ uri: buyer.profilePic }} style={styles.profileImage} />
+  ) : (
+    <View style={styles.placeholderAvatar}>
+      <Text style={styles.avatarText}>
+        {buyer.fullname?.charAt(0).toUpperCase() || "B"}
+      </Text>
+    </View>
+  )
+) : userDetail ? (
+  // If seller (userDetail) is logged in
+  userDetail.icon ? (
+    <Image source={{ uri: userDetail.icon }} style={styles.profileImage} />
+  ) : (
+    <View style={styles.placeholderAvatar}>
+      <Text style={styles.avatarText}>
+        {userDetail.fullname?.charAt(0).toUpperCase() || "S"}
+      </Text>
+    </View>
+  )
+) : (
+  // If no one logged in
+  <View style={styles.placeholderAvatar}>
+    <Text style={styles.avatarText}>U</Text>
+  </View>
+)}
 
+</TouchableOpacity>
+      </View>
       {loading && <ActivityIndicator style={styles.loading} color="#6D4AAE" />}
 
       {showSuggestions && (

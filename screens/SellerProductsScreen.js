@@ -154,6 +154,7 @@ const SellerProductsScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
+    const buyer = useSelector((state) => state.buyer.buyer);
   const { items: wishlistItems } = useSelector(state => state.wishlist);
   const isFocused = useIsFocused();
 
@@ -291,20 +292,27 @@ const res = await fetch(
     }
   };
   
-  const handleWishlistToggle = (productId) => {
-    const isProductInWishlist = wishlistItems.some(
-      (item) => item._id === productId || (item.product && item.product._id === productId)
+const handleWishlistToggle = (productId) => {
+  const isProductInWishlist = wishlistItems.some(
+    (item) => item._id === productId || (item.product && item.product._id === productId)
+  );
+
+  // 🔐 Allow both Buyer and User to add to wishlist
+  if (!user && !buyer) {
+    Alert.alert(
+      "Login Required",
+      "Please login first to manage your wishlist.",
+      [{ text: "OK", onPress: () => navigation.navigate("Login") }]
     );
-          if (!user) {
-    navigation.navigate('WishlistScreen');
     return;
   }
-    if (isProductInWishlist) {
-      dispatch(removeProductFromWishlist(productId));
-    } else {
-      dispatch(addProductToWishlist(productId));
-    }
-  };
+
+  if (isProductInWishlist) {
+    dispatch(removeProductFromWishlist(productId));
+  } else {
+    dispatch(addProductToWishlist(productId));
+  }
+};
 
   const renderHeader = () => (
     <View>

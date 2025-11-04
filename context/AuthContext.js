@@ -7,15 +7,12 @@ import { setReduxUser, clearReduxUser } from '../redux/userSlice'; // Import you
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const dispatch = useDispatch(); // Get the dispatch function
-  // These selectors are for internal AuthContext use if needed, but the primary source
-  // of truth for Redux state is now handled by the dispatch calls.
-  // The values passed via context are the local useState values.
+  const dispatch = useDispatch();
   const reduxUser = useSelector((state) => state.user.user);
   const reduxToken = useSelector((state) => state.user.token);
 
-  const [user, setUser] = useState(null); // Local state for context consumers
-  const [token, setToken] = useState(null); // Local state for context consumers
+  const [user, setUser] = useState(null); 
+  const [token, setToken] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
 
   // Function to handle user login and update Redux state

@@ -6,7 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Animated,
-     Platform, StatusBar
+  Platform, StatusBar
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SearchBarWithSuggestions from '../components/SearchBar';
@@ -74,7 +74,7 @@ const HomeScreen = ({ navigation }) => {
         renderItem={({ item }) => <View style={styles.section}>{item}</View>}
         keyExtractor={(_, index) => index.toString()}
         ListFooterComponent={<View style={{ height: 20 }} />}
-        contentContainerStyle={{ paddingTop: 50 }}
+        contentContainerStyle={{ paddingTop: 8 }}
         style={styles.content}
       />
 

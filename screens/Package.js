@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,24 +10,71 @@ import {
   Platform,
   Linking,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { plans } from '../components/PlansData';
+import Collapsible from 'react-native-collapsible';
 
+// --- COLLAPSIBLE SECTION COMPONENT ---
+const CollapsibleSection = ({ title, features, renderFeature }) => {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
+  return (
+    <View style={sectionStyles.container}>
+      <TouchableOpacity
+        style={sectionStyles.header}
+        onPress={() => setIsCollapsed(!isCollapsed)}
+        activeOpacity={0.8}
+      >
+        <Text style={sectionStyles.title}>{title}</Text>
+        <Ionicons
+          name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+          size={20}
+          color="#fff"
+        />
+      </TouchableOpacity>
+
+      <Collapsible collapsed={isCollapsed}>
+        <View style={sectionStyles.content}>
+          {features?.map(renderFeature)}
+        </View>
+      </Collapsible>
+    </View>
+  );
+};
+
+// --- MAIN PRICING PLANS COMPONENT ---
 const PricingPlans = () => {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     StatusBar.setBarStyle('dark-content');
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor('#F0F2F5');
     }
+
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch('https://www.dialexportmart.com/api/adminprofile/plans');
+        if (!response.ok) throw new Error('Failed to fetch plans');
+        const data = await response.json();
+        setPlans(data);
+      } catch (error) {
+        console.error('❌ Error fetching plans:', error);
+        Alert.alert('Error', 'Unable to load plans. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
   }, []);
 
   const handleWhatsAppEnquiry = (plan) => {
     const phoneNumber = '+918287427279';
     const message = `Hello, I am interested in the "${plan.title}" plan. Please provide more details.`;
-    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
-      message
-    )}`;
+    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
 
     Linking.openURL(url).catch(() => {
       Alert.alert(
@@ -37,73 +84,108 @@ const PricingPlans = () => {
     });
   };
 
-  const renderFeature = ([text, included], index) => (
-    <View key={index} style={styles.featureItem}>
-      <Ionicons
-        name={included ? 'checkmark-circle' : 'close-circle-outline'}
-        size={20}
-        color={included ? '#2ECC71' : '#E74C3C'}
-        style={styles.featureIcon}
-      />
-      <Text style={styles.featureText}>{text}</Text>
-    </View>
-  );
+  const renderFeature = (feature, index) => {
+    const text = Array.isArray(feature) ? feature[0] : feature.text;
+    const included = Array.isArray(feature)
+      ? feature[1]
+      : feature.included;
 
-  const renderPlan = ({ item }) => (
-    <View style={[styles.card, item.highlighted && styles.highlightedCard]}>
-      {item.highlighted && (
-        <View style={styles.ribbon}>
-          <Text style={styles.ribbonText}>⭐ Popular Choice ⭐</Text>
-        </View>
-      )}
-      <Text
-        style={[styles.cardTitle, item.highlighted && styles.highlightedCardTitle]}
-      >
-        {item.title}
-      </Text>
-
-      <View style={styles.featuresContainer}>
-        {item.features.map(renderFeature)}
+    return (
+      <View key={index} style={styles.featureItem}>
+        <Ionicons
+          name={included ? 'checkmark-circle' : 'close-circle-outline'}
+          size={20}
+          color={included ? '#2ECC71' : '#E74C3C'}
+          style={styles.featureIcon}
+        />
+        <Text style={styles.featureText}>{text}</Text>
       </View>
+    );
+  };
 
-      {/* Price visible only on Android */}
-      <View style={styles.priceContainer}>
-        {Platform.OS !== 'ios' && (
-          <>
-            <Text style={styles.price}>
-              ₹ {Number(item.price).toLocaleString('en-IN')}
-            </Text>
-            <Text style={styles.gst}>+ 18% GST Per Year</Text>
-          </>
+  const renderPlan = ({ item }) => {
+    const featureCategories = [
+      { title: 'Top Service', data: item.topService },
+      { title: 'Website Packages', data: item.website },
+      { title: 'SEO (Search Engine Optimization)', data: item.seo },
+      { title: 'SMO (Social Media Optimization)', data: item.smo },
+    ];
+
+    return (
+      <View style={[styles.card, item.highlighted && styles.highlightedCard]}>
+        {item.highlighted && (
+          <View style={styles.ribbon}>
+            <Text style={styles.ribbonText}>⭐ Popular Choice ⭐</Text>
+          </View>
         )}
-      </View>
-
-      <TouchableOpacity
-        onPress={() => {
-          if (Platform.OS === 'ios') {
-            Linking.openURL(
-              'mailto:info@dialexportmart.com?subject=Membership Enquiry'
-            );
-          } else {
-            handleWhatsAppEnquiry(item);
-          }
-        }}
-        style={[styles.payButton, item.highlighted && styles.highlightedPayButton]}
-      >
-        <Text style={styles.payButtonText}>
-          {Platform.OS === 'ios' ? 'Contact Us' : 'Enquire Now'}
+        <Text
+          style={[styles.cardTitle, item.highlighted && styles.highlightedCardTitle]}
+        >
+          {item.title}
         </Text>
-        {Platform.OS !== 'ios' && (
-          <Ionicons
-            name="logo-whatsapp"
-            size={20}
-            color="#fff"
-            style={{ marginLeft: 8 }}
-          />
-        )}
-      </TouchableOpacity>
-    </View>
-  );
+
+        <View style={styles.featuresContainer}>
+          {featureCategories.map((category, index) => (
+            <CollapsibleSection
+              key={index}
+              title={category.title}
+              features={category.data}
+              renderFeature={renderFeature}
+            />
+          ))}
+        </View>
+
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>
+            ₹ {Number(item.price).toLocaleString('en-IN')}
+          </Text>
+          <Text style={styles.gst}>+ 18% GST Per Year</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={() => {
+            if (Platform.OS === 'ios') {
+              Linking.openURL(
+                'mailto:info@dialexportmart.com?subject=Membership Enquiry'
+              );
+            } else {
+              handleWhatsAppEnquiry(item);
+            }
+          }}
+          style={[styles.payButton, item.highlighted && styles.highlightedPayButton]}
+        >
+          <Text style={styles.payButtonText}>
+            {Platform.OS === 'ios' ? 'Contact Us' : 'Enquire Now'}
+          </Text>
+          {Platform.OS !== 'ios' && (
+            <Ionicons
+              name="logo-whatsapp"
+              size={20}
+              color="#fff"
+              style={{ marginLeft: 8 }}
+            />
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#6A0DAD" />
+        <Text style={{ marginTop: 10, color: '#555' }}>Loading plans...</Text>
+      </View>
+    );
+  }
+
+  if (!plans.length) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={{ color: '#888' }}>No plans available</Text>
+      </View>
+    );
+  }
 
   const ListHeader = () => (
     <View style={styles.headerSection}>
@@ -125,20 +207,44 @@ const PricingPlans = () => {
         contentContainerStyle={styles.flatListContent}
         data={plans}
         renderItem={renderPlan}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item._id?.toString() || Math.random().toString()}
         showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
 };
 
+// --- STYLES ---
+const sectionStyles = StyleSheet.create({
+  container: {
+    marginBottom: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#6A0DAD',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+  },
+  title: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  content: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#D1C4E9',
+  },
+});
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F2F5' },
-  flatListContent: {
-    paddingTop: 10,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
+  flatListContent: { paddingTop: 10, paddingHorizontal: 10, paddingBottom: 20 },
+  loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   headerSection: {
     paddingVertical: 25,
     alignItems: 'center',
@@ -179,56 +285,45 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 25,
     elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    overflow: 'hidden',
   },
   highlightedCard: {
     borderColor: '#6A0DAD',
-    borderWidth: 2,
+    borderWidth: 3,
     shadowColor: '#6A0DAD',
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
+    shadowOpacity: 0.3,
     elevation: 12,
+    backgroundColor: '#F7F4FA',
   },
   ribbon: {
     position: 'absolute',
-    top: 45,
-    right: -45,
+    top: 0,
+    right: 0,
     backgroundColor: '#FF6F00',
-    paddingVertical: 8,
-    paddingHorizontal: 25,
-    transform: [{ rotate: '45deg' }],
+    paddingVertical: 4,
+    paddingHorizontal: 15,
+    borderBottomLeftRadius: 10,
     zIndex: 1,
   },
   ribbonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 13,
-    textAlign: 'center',
+    fontSize: 12,
     textTransform: 'uppercase',
   },
   cardTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
-    marginBottom: 15,
+    marginBottom: 20,
     textAlign: 'center',
     color: '#333',
   },
   highlightedCardTitle: { color: '#6A0DAD' },
-  featuresContainer: {
-    marginBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: 15,
-  },
-  featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  featuresContainer: { marginBottom: 20 },
+  featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   featureIcon: { marginRight: 12 },
-  featureText: { fontSize: 16, color: '#444', flexShrink: 1 },
+  featureText: { fontSize: 15, color: '#444', flexShrink: 1 },
   priceContainer: {
     alignItems: 'center',
     marginTop: 15,
@@ -237,7 +332,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#F0F0F0',
     paddingTop: 15,
   },
-  price: { fontSize: 30, fontWeight: '800', color: '#2C3E50' },
+  price: { fontSize: 36, fontWeight: '800', color: '#6A0DAD' },
   gst: { fontSize: 13, color: '#7F8C8D', marginTop: 5 },
   payButton: {
     flexDirection: 'row',
@@ -246,11 +341,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#6A0DAD',
     paddingVertical: 14,
     borderRadius: 12,
-    elevation: 5,
-    shadowColor: '#6A0DAD',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
   },
   highlightedPayButton: { backgroundColor: '#8E44AD' },
   payButtonText: { color: '#fff', fontWeight: '700', fontSize: 17 },

@@ -1,5 +1,4 @@
 // src/components/WishlistScreen.js
-
 import React, { useEffect } from 'react';
 import {
   View,
@@ -13,6 +12,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import RoleBadge from "../components/RoleBadge";
 
 import {
   fetchUserWishlist,
@@ -24,16 +24,22 @@ const WishlistScreen = () => {
   const dispatch = useDispatch();
   const { items: wishlistItems, loading, error } = useSelector((state) => state.wishlist);
   const user = useSelector((state) => state.user.user);
+  const buyer = useSelector((state) => state.buyer.buyer);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    if (user && user._id) {
-      dispatch(fetchUserWishlist());
-    } else {
-      console.log("WishlistScreen: User is NOT logged in or user._id is missing, clearing wishlist.");
-      dispatch(clearWishlist());
-    }
-  }, [dispatch, user]);
+useEffect(() => {
+  if (buyer && buyer._id) {
+    // ✅ Buyer logged in
+    dispatch(fetchUserWishlist());
+  } else if (user && (user._id || user.fullname)) {
+    // ✅ User logged in (with or without _id)
+    dispatch(fetchUserWishlist());
+  } else {
+    // 🚫 No one logged in
+    dispatch(clearWishlist());
+  }
+}, [dispatch, user, buyer]);
+
 
   const SkeletonWishlistCard = () => (
     <View style={styles.cardContainer}>
@@ -89,15 +95,14 @@ const WishlistScreen = () => {
 <Icon name="close" size={24} color="#dc3545" />
         </TouchableOpacity>
       </View>
-      {/* The cardFooter section is now completely removed */}
     </TouchableOpacity>
   );
-  // === END MODIFIED SECTION ===
 
+  // === END MODIFIED SECTION ===
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>My Wishlist</Text>
+  <RoleBadge />
         <ActivityIndicator size="large" color="#0000ff" style={{ marginVertical: 20 }} />
         <SkeletonWishlistCard />
         <SkeletonWishlistCard />
@@ -115,20 +120,20 @@ const WishlistScreen = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.title}>Wishlist</Text>
-        <Text style={styles.leadText}>Please log in to view and manage your wishlist.</Text>
-        <TouchableOpacity
-          style={styles.loginButton}
-          onPress={() => navigation.navigate('Login')}
-        >
-          <Text style={styles.loginButtonText}>Log In</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+if (!user && !buyer) {
+  return (
+    <View style={styles.centeredContainer}>
+      <Text style={styles.title}>Wishlist</Text>
+      <Text style={styles.leadText}>Please log in to view and manage your wishlist.</Text>
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={() => navigation.navigate('BuySell')}
+      >
+        <Text style={styles.loginButtonText}>Log In</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
 
   if (wishlistItems.length === 0) {
     return (
@@ -145,17 +150,22 @@ const WishlistScreen = () => {
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={wishlistItems}
-        renderItem={renderWishlistItem}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+return (
+  <View style={styles.container}>
+    <View style={styles.header}>
+      <RoleBadge />
     </View>
-  );
+
+    <FlatList
+      data={wishlistItems}
+      renderItem={renderWishlistItem}
+      keyExtractor={(item) => item._id}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+    />
+  </View>
+);
+
 };
 
 const styles = StyleSheet.create({

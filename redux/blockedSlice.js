@@ -1,24 +1,38 @@
-// store/blockedSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const blockedSlice = createSlice({
   name: "blocked",
   initialState: {
-    blockedSellers: [],
+    blockedByUser: [],
+    blockedByBuyer: [],
   },
   reducers: {
+    setBlockedByUser: (state, action) => {
+      state.blockedByUser = action.payload; // Array of seller IDs
+    },
+    setBlockedByBuyer: (state, action) => {
+      state.blockedByBuyer = action.payload; // Array of seller IDs
+    },
     blockSeller: (state, action) => {
-      if (!state.blockedSellers.includes(action.payload)) {
-        state.blockedSellers.push(action.payload);
+      const { sellerId, role } = action.payload;
+      if (role === "user" && !state.blockedByUser.includes(sellerId)) {
+        state.blockedByUser.push(sellerId);
+      }
+      if (role === "buyer" && !state.blockedByBuyer.includes(sellerId)) {
+        state.blockedByBuyer.push(sellerId);
       }
     },
     unblockSeller: (state, action) => {
-      state.blockedSellers = state.blockedSellers.filter(
-        (id) => id !== action.payload
-      );
+      const { sellerId, role } = action.payload;
+      if (role === "user") {
+        state.blockedByUser = state.blockedByUser.filter(id => id !== sellerId);
+      }
+      if (role === "buyer") {
+        state.blockedByBuyer = state.blockedByBuyer.filter(id => id !== sellerId);
+      }
     },
   },
 });
 
-export const { blockSeller, unblockSeller } = blockedSlice.actions;
+export const { setBlockedByUser, setBlockedByBuyer, blockSeller, unblockSeller } = blockedSlice.actions;
 export default blockedSlice.reducer;

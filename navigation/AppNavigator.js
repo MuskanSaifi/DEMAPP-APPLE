@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthContext } from '../context/AuthContext';
+import { BuyerAuthContext } from '../context/BuyerAuthContext';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -10,7 +11,10 @@ import AllCategoriesScreen from '../screens/AllCategoriesScreen';
 import CategoryScreen from '../screens/CategoryScreen';
 import SubcategoryScreen from '../screens/SubcategoryScreen';
 import ProductsScreen from '../screens/ProductsScreen';
+
 import DashboardScreen from '../screens/DashboardScreen';
+import BuyerDashboardScreen from '../screens/BuyerDashboardScreen';
+
 import PricingPlans from '../screens/Package';
 import PaymentScreen from '../screens/PaymentScreen';
 import PaymentSuccessScreen from '../screens/PaymentSuccessScreen';
@@ -19,13 +23,18 @@ import SellerProductsScreen from '../screens/SellerProductsScreen';
 import WishlistScreen from '../screens/WishlistScreen';
 import Notifications from '../screens/NotificationsScreen'; 
 import TermsScreen from '../screens/TermsScreen';
+import BuyerRegisterScreen from '../screens/BuyerRegisterScreen';
+import BuyerLoginScreen from '../screens/BuyerLoginScreen';
+import BuySell from '../screens/BuySell';
 
 const Stack = createNativeStackNavigator();
 export default function AppNavigator() {
   const { user, isLoading } = useContext(AuthContext);
-  if (isLoading) {
-    return <SplashScreen />;
-  }
+  const { buyer, isLoading: buyerLoading } = useContext(BuyerAuthContext);
+
+if (isLoading || buyerLoading) {
+  return <SplashScreen />;
+}
 return (
   <Stack.Navigator>
     {/* Always accessible screens */}
@@ -40,7 +49,8 @@ return (
       options={{ title: "Browse All Categories", headerTintColor: "#000" }}
     />
     <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
-    <Stack.Screen name="PricingPlans" component={PricingPlans} />
+    <Stack.Screen name="PricingPlans" component={PricingPlans} options={{ headerShown: false }}/>
+    <Stack.Screen name="BuySell" component={BuySell}  options={{ headerShown: false }}/>
     <Stack.Screen name="TermsScreen" component={TermsScreen} />
     <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
     <Stack.Screen name="SubcategoryScreen" component={SubcategoryScreen} />
@@ -73,8 +83,7 @@ return (
       component={WishlistScreen}
       options={{ title: "My Wishlist", headerTintColor: "#000" }}
     />
-
-    {/* Login/Register screens */}
+    {/*User Login/Register screens */}
     <Stack.Screen
       name="Register"
       component={RegisterScreen}
@@ -85,8 +94,18 @@ return (
       component={LoginScreen}
       options={{ headerShown: false }}
     />
-
-    {/* Dashboard only if user is logged in */}
+    {/*Buyer Login/Register screens */}
+    <Stack.Screen
+      name="BuyerRegisterScreen"
+      component={BuyerRegisterScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="BuyerLoginScreen"
+      component={BuyerLoginScreen}
+      options={{ headerShown: false }}
+    />
+   {/* User Dashboard */}
     {user && (
       <Stack.Screen
         name="DashboardScreen"
@@ -94,7 +113,12 @@ return (
         options={{ headerShown: false }}
       />
     )}
+    {/* Buyer Dashboard */}
+<Stack.Screen
+  name="BuyerDashboardScreen"
+  component={BuyerDashboardScreen}
+  options={{ headerShown: false }}
+/>
   </Stack.Navigator>
 );
-
 }

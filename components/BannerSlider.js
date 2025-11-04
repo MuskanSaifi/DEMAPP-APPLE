@@ -1,30 +1,97 @@
-import React from 'react';
-import { View, Image, FlatList, StyleSheet, Dimensions } from 'react-native';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Image,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
+  Linking,
+} from "react-native";
+import axios from "axios";
 
-const { width } = Dimensions.get('window');
-const aspectRatio = 453 / 1066; // height / width = 0.5
+const { width } = Dimensions.get("window");
+const aspectRatio = 453 / 1066; // height / width
 
-const banners = [
-  { id: '1', image: require('../assets/banner-1.png') },
-  { id: '2', image: require('../assets/banner-2.png') },
-  { id: '3', image: require('../assets/banner-3.png') },
-  { id: '4', image: require('../assets/banner-4.png') },
-];
+const BannerSlider = ({ navigation }) => {
+  const [banners, setBanners] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-const BannerSlider = () => {
+  // 🧠 Fetch banners from backend
+  const fetchBanners = async () => {
+    try {
+      const res = await axios.get("https://www.dialexportmart.com/api/adminprofile/banner");
+      if (res.data.success) {
+        // Filter only active app banners
+        const filtered = res.data.banners.filter(
+          (b) => b.isActive && (b.platform === "app" || b.platform === "both")
+        );
+        setBanners(filtered);
+      }
+    } catch (error) {
+      console.error("Failed to load banners:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  // 🖱 Handle tap on banner
+  const handleBannerClick = (link) => {
+    if (!link) return;
+    if (link.startsWith("http")) {
+      Linking.openURL(link);
+    } else if (navigation) {
+      navigation.navigate(link);
+    }
+  };
+
+  // ⏳ Loading state
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  // ❌ No banners fallback
+  if (banners.length === 0) {
+    return (
+      <View style={styles.noBanner}>
+        <Image
+          source={{
+            uri: "https://via.placeholder.com/600x250.png?text=No+Banners+Available",
+          }}
+          style={styles.noBannerImage}
+        />
+      </View>
+    );
+  }
+
+  // ✅ Render banners
   return (
     <View style={styles.wrapper}>
       <FlatList
         horizontal
         data={banners}
         renderItem={({ item }) => (
-          <Image
-            source={item.image}
-            style={{ width: width, height: width * aspectRatio }}
-            resizeMode="contain" // Keeps full image visible
-          />
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => handleBannerClick(item.link)}
+          >
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={{ width: width, height: width * aspectRatio }}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id || item.id}
         showsHorizontalScrollIndicator={false}
         pagingEnabled
         snapToInterval={width}
@@ -35,8 +102,22 @@ const BannerSlider = () => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    marginTop: 10,
+ 
+  loader: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 150,
+  },
+  noBanner: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 150,
+  },
+  noBannerImage: {
+    width: 150,
+    height: 100,
+    resizeMode: "contain",
+    opacity: 0.6,
   },
 });
 

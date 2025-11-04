@@ -1,6 +1,4 @@
-// App.js
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import {
   ActivityIndicator,
@@ -12,15 +10,14 @@ import {
 import NetInfo from "@react-native-community/netinfo";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
-
 import { AuthProvider } from "./context/AuthContext";
+import { BuyerAuthProvider, BuyerAuthContext } from "./context/BuyerAuthContext";
 import RootApp from "./RootApp";
 import NoInternetScreen from "./screens/NoInternet";
 import { Provider as PaperProvider, Portal } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import FlashMessage from "react-native-flash-message";
 
-// Styles for the loading state (while checking connection)
 const loadingStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -34,6 +31,27 @@ const loadingStyles = StyleSheet.create({
     color: "#d20606ff",
   },
 });
+
+function MainApp() {
+  const { isLoading: userLoading } = useContext(require("./context/AuthContext").AuthContext);
+  const { isLoading: buyerLoading } = useContext(BuyerAuthContext);
+
+  if (userLoading || buyerLoading) {
+    return (
+      <View style={loadingStyles.container}>
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text style={loadingStyles.text}>Loading user session...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <RootApp />
+    </SafeAreaView>
+  );
+}
 
 export default function App() {
   const [isConnected, setIsConnected] = useState(true);
@@ -52,9 +70,7 @@ export default function App() {
       setIsInternetReachable(state.isInternetReachable);
     });
 
-    return () => {
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   const handleRetryConnection = async () => {
@@ -76,33 +92,24 @@ export default function App() {
   }
 
   if (!isConnected || !isInternetReachable) {
-    return (
-      <>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <NoInternetScreen onRetry={handleRetryConnection} />
-      </>
-    );
+    return <NoInternetScreen onRetry={handleRetryConnection} />;
   }
 
   return (
     <Provider store={store}>
       <AuthProvider>
-        <PaperProvider>
-          <Portal.Host>
-            <SafeAreaProvider>
-              <NavigationContainer>
-                <SafeAreaView
-                  style={{ flex: 1, backgroundColor: "#fff" }}
-                  edges={["left", "right", "bottom"]} 
-                >
-                  <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-                  <RootApp />
-                </SafeAreaView>
-              </NavigationContainer>
-                                  <FlashMessage position="top" />
-            </SafeAreaProvider>
-          </Portal.Host>
-        </PaperProvider>
+        <BuyerAuthProvider>
+          <PaperProvider>
+            <Portal.Host>
+              <SafeAreaProvider>
+                <NavigationContainer>
+                  <MainApp />
+                </NavigationContainer>
+                <FlashMessage position="top" />
+              </SafeAreaProvider>
+            </Portal.Host>
+          </PaperProvider>
+        </BuyerAuthProvider>
       </AuthProvider>
     </Provider>
   );

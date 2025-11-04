@@ -34,12 +34,14 @@ const BottomTabs = () => {
 
   const serviceItems = [
 { name: 'Buy Leads', icon: 'bulb-outline' },
-{ name: 'Subscription Plans', icon: 'wallet-outline', route: 'PricingPlans' },
+{ name: 'Our Plans', icon: 'wallet-outline', route: 'PricingPlans' },
 { name: 'Google Listing', icon: 'globe-outline' },
 { name: 'Wishlist', icon: 'heart-outline', route: 'WishlistScreen', count: wishlistCount },
 { name: 'GetDomain', icon: 'at-outline' },
 { name: 'Categories', icon: 'list-outline', route: 'AllCategories' },
 { name: 'Notifications', icon: 'notifications-outline', route: 'NotificationsScreen'},
+{ name: 'Buyer Dashboard', icon: 'notifications-outline', route: 'BuyerDashboardScreen'},
+{ name: 'Buy Sell', icon: 'notifications-outline', route: 'BuySell'},
 // { name: 'More...', icon: 'ellipsis-horizontal-circle-outline' },
   ];
 

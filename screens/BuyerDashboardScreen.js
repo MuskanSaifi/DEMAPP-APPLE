@@ -10,30 +10,41 @@ import {
   StatusBar,
 } from "react-native";
 import Icon from "react-native-vector-icons/Feather";
-import { useNavigation, useRoute, useIsFocused } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation, useRoute, useIsFocused } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 
-import Sidebar from "../components/dashboard/Sidebar";
+import Sidebar from "../components/buyerdashboard/Sidebar";
 import BottomTabs from "../components/BottomTabs";
-import AllPayments from "../components/dashboard/AllPayments";
-import DashboardMain from "../components/dashboard/DashboardMain";
-import SupportPerson from "../components/dashboard/SupportPerson";
-import CustomerLeads from "../components/dashboard/CustomerLeads";
-import UserProfile from "../components/dashboard/UserProfile";
-import BusinessProfile from "../components/dashboard/BusinessProfile";
-import BankDetails from "../components/dashboard/BankDetails";
-import MyProducts from "../components/dashboard/MyProducts";
-import AddProduct from "../components/dashboard/AddProducts";
+import BuyerProfile from "../components/buyerdashboard/BuyerProfile";
+import HelpDeskScreen from "../components/buyerdashboard/HelpDesk";
+import Wishlist from "../components/buyerdashboard/Wishlist";
+import BlockedSellers from "../components/buyerdashboard/BlockedSellers";
 
 const { width } = Dimensions.get("window");
 
-const DashboardScreen = () => {
+const BuyerDashboardScreen = () => {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const sidebarX = useRef(new Animated.Value(-width * 0.8)).current;
-  const [activeScreen, setActiveScreen] = useState("Dashboard");
+  const [activeScreen, setActiveScreen] = useState("Profile");
+
   const route = useRoute();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+
+  // 👇 Get auth info from Redux
+  const buyer = useSelector((state) => state.buyer.buyer);
+  const token = useSelector((state) => state.buyer.token);
+
+  // 🚧 Redirect to Login if not logged in
+  useEffect(() => {
+    if (!token) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "BuyerLoginScreen" }],
+      });
+    }
+  }, [token, navigation]);
 
   useEffect(() => {
     if (route.params?.selectedTab) {
@@ -44,7 +55,9 @@ const DashboardScreen = () => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("blur", () => {
-      if (sidebarVisible) toggleSidebar();
+      if (sidebarVisible) {
+        toggleSidebar();
+      }
     });
     return unsubscribe;
   }, [navigation, sidebarVisible]);
@@ -68,13 +81,16 @@ const DashboardScreen = () => {
     }
   };
 
+  // 🚫 If not logged in, show nothing temporarily (redirect will happen)
+  if (!token) {
+    return null;
+  }
+
   return (
     <SafeAreaView
-      style={styles.safeAreaContainer}
-      edges={["left", "right", "bottom"]} // 👈 disables top safe area padding
-    >
-      {/* Hide StatusBar background for full-top look */}
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+  style={[styles.safeAreaContainer, { paddingTop: Platform.OS === "android" ? 0 : 0 }]}
+  edges={['left', 'right', 'bottom']}
+>
 
       {/* Sidebar */}
       {sidebarVisible && isFocused && (
@@ -107,18 +123,11 @@ const DashboardScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Main Content */}
-      {activeScreen === "Dashboard" && (
-        <DashboardMain setActiveScreen={setActiveScreen} />
-      )}
-      {activeScreen === "Payments" && <AllPayments />}
-      {activeScreen === "Support Person" && <SupportPerson />}
-      {activeScreen === "Customer Leads" && <CustomerLeads />}
-      {activeScreen === "User Profile" && <UserProfile />}
-      {activeScreen === "Business Profile" && <BusinessProfile />}
-      {activeScreen === "Bank Details" && <BankDetails />}
-      {activeScreen === "My Products" && <MyProducts />}
-      {activeScreen === "Add Product" && <AddProduct />}
+      {/* Screens */}
+      {activeScreen === "Profile" && <BuyerProfile />}
+      {activeScreen === "Wishlist" && <Wishlist />}
+      {activeScreen === "BlockedSellers" && <BlockedSellers />}
+      {activeScreen === "HelpDesk" && <HelpDeskScreen />}
 
       {/* Bottom Tabs */}
       <View style={styles.bottomTabsContainer}>
@@ -133,25 +142,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
   },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#FFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    // 👇 removes any automatic top padding
-    marginTop: Platform.OS === "android" ? 0 : 0,
-  },
+header: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: 16,
+  backgroundColor: "#FFF",
+  borderBottomWidth: 1,
+  borderBottomColor: "#e0e0e0",
+  marginTop: Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0,
+},
 
   screenTitle: {
     fontSize: 20,
     fontWeight: "600",
     color: "#6D4AAE",
   },
-
   sidebar: {
     position: "absolute",
     top: 0,
@@ -194,4 +200,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DashboardScreen;
+export default BuyerDashboardScreen;

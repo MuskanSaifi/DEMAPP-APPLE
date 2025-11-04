@@ -2,114 +2,112 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-// import Toast from 'react-native-toast-message'; // Example: You'll need to install and configure a React Native toast library
 
-// IMPORTANT: Replace with your actual backend API URL.
-// If running on a physical device, this must be your machine's IP address.
-// If running on an emulator, 'http://10.0.2.2' is common for Android emulators to access localhost.
-// For iOS simulators, 'http://localhost' usually works, but your machine's IP is safer.
-const API_BASE_URL = "https://www.dialexportmart.com"; // Corrected URL
+const API_BASE_URL = "https://www.dialexportmart.com"; // Backend base URL
 
-// Helper for showing toasts (You'll implement this based on your chosen toast library)
-const showToast = (type, text1, text2 = '') => {
-    // Example using react-native-toast-message:
-    // Toast.show({
-    //     type: type, // 'success', 'error', 'info'
-    //     text1: text1,
-    //     text2: text2,
-    //     position: 'bottom',
-    //     visibilityTime: 3000,
-    //     autoHide: true,
-    //     topOffset: 30,
-    //     bottomOffset: 40,
-    // });
-    console.log(`Toast (${type}): ${text1} - ${text2}`); // Fallback to console for now
+// Simple toast helper (replace with your actual toast lib if available)
+const showToast = (type, text1, text2 = "") => {
+  console.log(`Toast (${type}): ${text1} - ${text2}`);
+};
+
+// 🧠 Helper to detect role and token (for both user & buyer)
+const getAuthInfo = (getState) => {
+  const { user, buyer } = getState();
+
+  // ✅ Always prioritize buyer if both are logged in
+  if (buyer?.buyer?._id && buyer?.token) {
+    return { token: buyer.token, role: "buyer" };
+  } else if (user?.user?._id && user?.token) {
+    return { token: user.token, role: "user" };
+  }
+
+  return { token: null, role: null };
 };
 
 
-// Async Thunks for API calls
+// =============== FETCH WISHLIST ===============
 export const fetchUserWishlist = createAsyncThunk(
   "wishlist/fetchUserWishlist",
   async (_, { rejectWithValue, getState }) => {
     try {
-      // Get token from Redux store (userSlice)
-      const token = getState().user.token;
-      if (!token) {
-        // No toast for this, as it's typically handled by a login redirect or message
-        return rejectWithValue("No authentication token found.");
-      }
+      const { token, role } = getAuthInfo(getState);
+      if (!token || !role) return rejectWithValue("Unauthorized");
 
       const response = await axios.get(`${API_BASE_URL}/api/wishlist`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
+        params: { role }, // ✅ backend needs this
       });
- 
+
       return response.data.wishlist || [];
     } catch (error) {
-      console.error("❌ Error fetching user wishlist:", error);
-      // showToast('error', 'Failed to load wishlist.'); // Optional: You could show a toast here too
+      console.error("❌ Error fetching wishlist:", error);
       return rejectWithValue(error.response?.data?.message || "Failed to fetch wishlist");
     }
   }
 );
 
+// =============== ADD PRODUCT ===============
 export const addProductToWishlist = createAsyncThunk(
   "wishlist/addProductToWishlist",
   async (productId, { rejectWithValue, getState }) => {
     try {
-      const token = getState().user.token;
-      if (!token) {
-        showToast('error', "Please log in to add to wishlist."); // Inform user to log in
-        return rejectWithValue("No authentication token found.");
+      const { token, role } = getAuthInfo(getState);
+      if (!token || !role) {
+        showToast("error", "Please log in to add to wishlist.");
+        return rejectWithValue("Unauthorized");
       }
 
       const response = await axios.post(
         `${API_BASE_URL}/api/wishlist`,
-        { productId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { productId, role }, // ✅ include role
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      showToast('success', "Product added to wishlist!"); // Success toast
+
+      showToast("success", "Product added to wishlist!");
       return response.data.wishlist;
     } catch (error) {
-      console.error("❌ Error adding product to wishlist:", error);
-      const errorMessage = error.response?.data?.message || "Failed to add product to wishlist";
-      showToast('error', errorMessage); // Error toast
-      return rejectWithValue(errorMessage);
+      console.error("❌ Error adding wishlist:", error);
+      const msg = error.response?.data?.message || "Failed to add product to wishlist";
+      showToast("error", msg);
+      return rejectWithValue(msg);
     }
   }
 );
 
+// =============== REMOVE PRODUCT ===============
 export const removeProductFromWishlist = createAsyncThunk(
   "wishlist/removeProductFromWishlist",
   async (productId, { rejectWithValue, getState }) => {
     try {
-      const token = getState().user.token;
-      if (!token) {
-        showToast('error', "Please log in to remove from wishlist."); // Inform user to log in
-        return rejectWithValue("No authentication token found.");
+      const { token, role } = getAuthInfo(getState);
+      if (!token || !role) {
+        showToast("error", "Please log in to remove from wishlist.");
+        return rejectWithValue("Unauthorized");
       }
 
-      const response = await axios.delete(`${API_BASE_URL}/api/wishlist/${productId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      showToast('success', "Product removed from wishlist!"); // Success toast
+      console.log("🟢 Removing from wishlist:", productId, "role:", role);
+
+      const response = await axios.delete(
+        `${API_BASE_URL}/api/wishlist/${productId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { role }, // ✅ send via query (backend expects this)
+        }
+      );
+
+      showToast("success", "Product removed from wishlist!");
       return response.data.wishlist;
     } catch (error) {
-      console.error("❌ Error removing product from wishlist:", error);
-      const errorMessage = error.response?.data?.message || "Failed to remove product from wishlist";
-      showToast('error', errorMessage); // Error toast
-      return rejectWithValue(errorMessage);
+      console.error("❌ Error removing wishlist:", error);
+      const msg = error.response?.data?.message || "Failed to remove product from wishlist";
+      showToast("error", msg);
+      return rejectWithValue(msg);
     }
   }
 );
 
+
+// =============== SLICE ===============
 const wishlistSlice = createSlice({
   name: "wishlist",
   initialState: {
@@ -122,12 +120,11 @@ const wishlistSlice = createSlice({
       state.items = [];
       state.error = null;
       state.loading = false;
-      showToast('info', "Wishlist cleared!"); // Optional: Toast for clearing wishlist on logout
-    }
+      showToast("info", "Wishlist cleared!");
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Wishlist
       .addCase(fetchUserWishlist.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -140,8 +137,6 @@ const wishlistSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Add Product to Wishlist
       .addCase(addProductToWishlist.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -154,8 +149,6 @@ const wishlistSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Remove Product from Wishlist
       .addCase(removeProductFromWishlist.pending, (state) => {
         state.loading = true;
         state.error = null;

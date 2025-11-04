@@ -151,19 +151,21 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: 10,
   },
-  card: {
-    width: CARD_WIDTH,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    marginHorizontal: 4,
-    paddingVertical: 7,
-    paddingHorizontal: 5,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+card: {
+  width: CARD_WIDTH,
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  marginHorizontal: 4,
+  paddingVertical: 7,
+  paddingHorizontal: 5,
+  alignItems: "center",
+  shadowColor: "#000",
+  shadowOpacity: 0.05, // ↓ lighter shadow
+  shadowOffset: { width: 0, height: 1 }, // ↓ smaller offset
+  shadowRadius: 3, // ↓ softer blur
+  elevation: 1.5, // ↓ lower Android shadow
+},
+
   imageWrapper: {
     width: CARD_WIDTH * 0.94,
     height: CARD_WIDTH * 0.94,

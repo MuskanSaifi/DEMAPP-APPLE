@@ -2,13 +2,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
 import wishlistReducer from './wishlistSlice'; 
-import blockedReducer from "./blockedSlice";
+import blockedReducer from './blockedSlice';
+import buyerReducer from './buyerSlice';
 
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
     user: userReducer,
-    wishlist: wishlistReducer, 
+    wishlist: wishlistReducer,
     blocked: blockedReducer,
+    buyer: buyerReducer, 
   },
 });
