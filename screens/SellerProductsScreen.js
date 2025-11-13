@@ -12,6 +12,7 @@ import {
   UIManager,
   Animated,
   StatusBar,
+  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useRoute, useNavigation, useIsFocused } from "@react-navigation/native";
@@ -302,7 +303,7 @@ const handleWishlistToggle = (productId) => {
     Alert.alert(
       "Login Required",
       "Please login first to manage your wishlist.",
-      [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+      [{ text: "OK", onPress: () => navigation.navigate("BuySell") }]
     );
     return;
   }
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
   },
   subcategoriesContainer: {
     backgroundColor: "#FFFFFF",
-    marginTop: 70,
+    marginTop: Platform.OS === "ios" ? 10 : 60,
   },
   subcategoriesTitle: {
     fontWeight: 'bold',

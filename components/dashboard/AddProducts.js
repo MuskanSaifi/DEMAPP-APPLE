@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Linking,
   Alert, // Import Alert for permissions
+  Platform
 } from 'react-native';
 import axios from 'axios';
 import { showMessage } from 'react-native-flash-message';
@@ -1604,7 +1605,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom:70,
+    marginBottom: Platform.OS === "ios" ? 50 : 80, // 👈 iOS smaller, Android more
   },
   submitButtonText: {
     color: '#fff',

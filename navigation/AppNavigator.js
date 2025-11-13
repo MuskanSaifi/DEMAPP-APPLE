@@ -26,6 +26,9 @@ import TermsScreen from '../screens/TermsScreen';
 import BuyerRegisterScreen from '../screens/BuyerRegisterScreen';
 import BuyerLoginScreen from '../screens/BuyerLoginScreen';
 import BuySell from '../screens/BuySell';
+import HelpDeskScreen from '../screens/HelpSupport';
+import RoleSelectionScreen from '../screens/RoleSelectionScreen';
+import BuyerTermsScreen from '../screens/BuyerTermsScreen';
 
 const Stack = createNativeStackNavigator();
 export default function AppNavigator() {
@@ -49,14 +52,34 @@ return (
       options={{ title: "Browse All Categories", headerTintColor: "#000" }}
     />
     <Stack.Screen name="CategoryScreen" component={CategoryScreen} />
-    <Stack.Screen name="PricingPlans" component={PricingPlans} options={{ headerShown: false }}/>
+    <Stack.Screen 
+      name="PricingPlans" 
+      component={PricingPlans}
+      options={{ title: "Choose Your Plan" }} 
+    />
     <Stack.Screen name="BuySell" component={BuySell}  options={{ headerShown: false }}/>
-    <Stack.Screen name="TermsScreen" component={TermsScreen} />
+ <Stack.Screen
+  name="TermsScreen"
+  component={TermsScreen}
+  options={{ title: "User Terms & Conditions" }}
+/>
+
+<Stack.Screen
+  name="BuyerTermsScreen"
+  component={BuyerTermsScreen}
+  options={{ title: "Buyer Terms & Conditions" }}
+/>
+
     <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
     <Stack.Screen name="SubcategoryScreen" component={SubcategoryScreen} />
     <Stack.Screen
       name="SellerProductsScreen"
       component={SellerProductsScreen}
+      options={{ headerShown: false }}
+    />
+    <Stack.Screen
+      name="RoleSelectionScreen"
+      component={RoleSelectionScreen}
       options={{ headerShown: false }}
     />
     <Stack.Screen
@@ -82,6 +105,11 @@ return (
       name="WishlistScreen"
       component={WishlistScreen}
       options={{ title: "My Wishlist", headerTintColor: "#000" }}
+    />
+    <Stack.Screen
+      name="Help & Support"
+      component={HelpDeskScreen}
+      options={{ title: "Help & Support", headerTintColor: "#000" }}
     />
     {/*User Login/Register screens */}
     <Stack.Screen

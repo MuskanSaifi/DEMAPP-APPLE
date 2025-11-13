@@ -12,7 +12,6 @@ const NUM_COLUMNS = 4;
 // Total margin space = (NUM_COLUMNS + 1) * ITEM_MARGIN (for left, right, and in-between items)
 const ITEM_WIDTH = (width - (ITEM_MARGIN * (NUM_COLUMNS + 1))) / NUM_COLUMNS;
 
-
 const CategoryScreen = ({ route, navigation }) => {
   const { category } = route.params;
 
@@ -84,16 +83,17 @@ const styles = StyleSheet.create({
     // borderColor: '#ddd', // Optional: remove if you prefer no border
     borderRadius: 12, // Slightly more rounded corners
     backgroundColor: '#ffffff', // White background for cards
-
-   borderWidth: 1,
+    borderWidth: 1,
     borderColor: '#eee',
   },
+
   icon: {
     width: 50, // Slightly larger icon
     height: 50,
     marginBottom: 8,
     borderRadius: 5, // Optional: small border radius for icons
   },
+  
   subcategoryText: {
     fontSize: 11, // Slightly smaller for better fit
     color: '#333', // Darker text for readability

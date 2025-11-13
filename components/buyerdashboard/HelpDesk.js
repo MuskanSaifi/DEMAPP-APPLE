@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Linking,
+  Platform
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -244,6 +245,7 @@ const styles = StyleSheet.create({
     color: "#475569",
     textAlign: "center",
     marginTop: 4,
+    
   },
  
   form: {
@@ -252,6 +254,7 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 2,
     marginTop: 10,
+      marginBottom: Platform.OS === "ios" ? 50 : 100, // 👈 iOS smaller, Android more
   },
   formSubtitle: {
     color: "#475569",
@@ -265,13 +268,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#fff",
   },
-  submitBtn: {
-    backgroundColor: "#6A5ACD",
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    marginBottom: 30,
-  },
+submitBtn: {
+  backgroundColor: "#6A5ACD",
+  paddingVertical: 12,
+  borderRadius: 10,
+  alignItems: "center",
+},
+
   submitText: {
     color: "#fff",
     fontWeight: "600",

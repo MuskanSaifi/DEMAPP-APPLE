@@ -17,6 +17,7 @@ import ProductSections from '../components/ProductSections';
 import BottomAdd from '../components/BottomAdd';
 import Sidebar from '../components/Sidebar';
 import Frames from '../components/Frames';
+import Packages from '../components/Packages';
 
 const { width } = Dimensions.get('window');
 
@@ -43,6 +44,7 @@ const HomeScreen = ({ navigation }) => {
     <ProductSections key="productsections1" tag="trending" Name="Trending" />,
     <ProductSections key="productsections2" tag="diwaliOffer" Name="Featured Products" />,
     <ProductSections key="productsections3" tag="holiOffer" Name="Products You May Like" />,
+    <Packages key="Packages" />,
     <BottomAdd key="bottomadd" />,
   ];
 

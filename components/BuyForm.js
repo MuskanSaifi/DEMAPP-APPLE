@@ -14,8 +14,9 @@ const Buyfrom = ({ product, sellerId }) => {
   const [buyerId, setBuyerId] = useState(null);
   const [isLoadingBuyer, setIsLoadingBuyer] = useState(false);
 
-  // This useSelector will now correctly retrieve the user from the Redux store
-  const user = useSelector((state) => state.user.user);
+// This useSelector will now correctly retrieve the user from the Redux store
+const user = useSelector((state) => state.user.user);
+const buyer = useSelector((state) => state.buyer.buyer);
 
   useEffect(() => {
     const initializeBuyer = async () => {
@@ -184,57 +185,59 @@ const Buyfrom = ({ product, sellerId }) => {
   };
 
   const handleSubmit = async () => {
-    if (!buyerId) {
-        Alert.alert('Error', 'Buyer information not established. Please go back to step 1.');
-        setStep(1); // Force to step 1
-        return;
+  // 🧩 Auto fallback if buyer is logged in from Redux
+  if (!buyerId) {
+    if (buyer?._id) {
+      setBuyerId(buyer._id);
+    } else if (user?._id) {
+      setBuyerId(user._id);
+    } else {
+      Alert.alert('Error', 'Buyer information not established. Please go back to step 1.');
+      setStep(1);
+      return;
     }
-    if (quantity <= 0 || !Number.isInteger(quantity)) {
-        Alert.alert('Invalid Quantity', 'Please enter a valid positive whole number for quantity.');
-        return;
-    }
+  }
 
-    const orderData = {
-      product: product._id,
-      quantity,
-      unit: product.unit,
-      approxOrderValue: {
-        amount: product.tradeShopping?.slabPricing?.[0]?.price || product.price,
-        currency: 'INR',
-      },
-      buyer: buyerId,
-      requirementFrequency: 'one-time',
-      seller: sellerId,
-    };
+  if (quantity <= 0 || !Number.isInteger(quantity)) {
+    Alert.alert('Invalid Quantity', 'Please enter a valid positive whole number for quantity.');
+    return;
+  }
 
-    try {
-      // Replace with your actual API endpoint
-      const res = await fetch('https://www.dialexportmart.com/api/purchaserequest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
-
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (jsonErr) {
-        console.warn('No JSON response or empty response from /api/purchaserequest:', jsonErr);
-      }
-
-      if (res.ok) {
-        Alert.alert('Order Submitted!', 'Your order has been submitted successfully!', [
-          { text: 'OK', onPress: () => setIsOpen(false) }
-        ]);
-      } else {
-        console.error('Error response from /api/purchaserequest:', data);
-        Alert.alert('Order Failed', data?.error || 'Something went wrong submitting your order.');
-      }
-    } catch (err) {
-      console.error('API Error during order submission:', err);
-      Alert.alert('Server Error', 'Server error during order submission. Please try again.');
-    }
+  const orderData = {
+    product: product._id,
+    quantity,
+    unit: product.unit,
+    approxOrderValue: {
+      amount: product.tradeShopping?.slabPricing?.[0]?.price || product.price,
+      currency: 'INR',
+    },
+    buyer: buyerId || buyer?._id || user?._id,
+    requirementFrequency: 'one-time',
+    seller: sellerId,
   };
+
+  try {
+    const res = await fetch('https://www.dialexportmart.com/api/purchaserequest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      Alert.alert('Order Submitted!', 'Your order has been submitted successfully!', [
+        { text: 'OK', onPress: () => setIsOpen(false) }
+      ]);
+    } else {
+      Alert.alert('Order Failed', data?.error || 'Something went wrong submitting your order.');
+    }
+  } catch (err) {
+    console.error('API Error during order submission:', err);
+    Alert.alert('Server Error', 'Server error during order submission. Please try again.');
+  }
+};
+
 
   return (
     <>
@@ -262,68 +265,71 @@ const Buyfrom = ({ product, sellerId }) => {
             {isLoadingBuyer ? (
               <ActivityIndicator size="large" color="#0000ff" style={styles.loadingIndicator} />
             ) : (
-              <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                {step === 1 && (
-                  <>
-                    <Text style={styles.label}>Full Name</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={fullname}
-                      onChangeText={setFullname}
-                      placeholder="Your full name"
-                      autoCapitalize="words"
-                    />
-                    <Text style={styles.label}>Email</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={email}
-                      onChangeText={setEmail}
-                      placeholder="Your email"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                    <Text style={styles.label}>Phone Number</Text>
-                    <TextInput
-                      style={styles.input}
-                      value={phone}
-                      onChangeText={setPhone}
-                      placeholder="Enter your phone number"
-                      keyboardType="phone-pad"
-                      maxLength={10}
-                    />
-                    <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
-                      <Text style={styles.buttonText}>Next</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
+<ScrollView contentContainerStyle={styles.scrollViewContent}>
 
-                {step === 2 && (
-                  <View>
-                    <Text style={styles.productName}>Product: {product.name}</Text>
-                    <View style={styles.quantityContainer}>
-                      <Text style={styles.label}>Quantity</Text>
-                      <TextInput
-                        style={styles.input}
-                        value={quantity === 0 || quantity === '' ? '' : String(quantity)}
-                        onChangeText={(val) => {
-                          if (val === '') {
-                            setQuantity('');
-                          } else {
-                            const parsedVal = parseInt(val, 10);
-                            if (!isNaN(parsedVal)) {
-                              setQuantity(parsedVal);
-                            }
-                          }
-                        }}
-                        keyboardType="numeric"
-                        min="1"
-                      />
-                    </View>
-                    <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
-                      <Text style={styles.buttonText}>Submit Order</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+{(step === 1 && !buyer?._id && !user?._id) && (
+  <>
+    <Text style={styles.label}>Full Name</Text>
+    <TextInput
+      style={styles.input}
+      value={fullname}
+      onChangeText={setFullname}
+      placeholder="Your full name"
+      autoCapitalize="words"
+    />
+    <Text style={styles.label}>Email</Text>
+    <TextInput
+      style={styles.input}
+      value={email}
+      onChangeText={setEmail}
+      placeholder="Your email"
+      keyboardType="email-address"
+      autoCapitalize="none"
+    />
+    <Text style={styles.label}>Phone Number</Text>
+    <TextInput
+      style={styles.input}
+      value={phone}
+      onChangeText={setPhone}
+      placeholder="Enter your phone number"
+      keyboardType="phone-pad"
+      maxLength={10}
+    />
+    <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
+      <Text style={styles.buttonText}>Next</Text>
+    </TouchableOpacity>
+  </>
+)}
+
+{/* 👇 Always show quantity if buyer/user is logged in OR step is 2 */}
+{((buyer?._id || user?._id) || step === 2) && (
+  <View>
+    <Text style={styles.productName}>Product: {product.name}</Text>
+    <View style={styles.quantityContainer}>
+      <Text style={styles.label}>Quantity</Text>
+      <TextInput
+        style={styles.input}
+        value={quantity === 0 || quantity === '' ? '' : String(quantity)}
+        onChangeText={(val) => {
+          if (val === '') {
+            setQuantity('');
+          } else {
+            const parsedVal = parseInt(val, 10);
+            if (!isNaN(parsedVal)) {
+              setQuantity(parsedVal);
+            }
+          }
+        }}
+        keyboardType="numeric"
+        min="1"
+      />
+    </View>
+    <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
+      <Text style={styles.buttonText}>Submit Order</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
               </ScrollView>
             )}
           </View>

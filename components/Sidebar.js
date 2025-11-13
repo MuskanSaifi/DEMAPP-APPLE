@@ -100,39 +100,44 @@ const Sidebar = ({ activeScreen, toggleSidebar, navigation }) => {
             <View style={styles.textContainer}>
               <Text style={styles.greetingText}>👋 Welcome!</Text>
               <Text style={styles.nameText}>
-                {buyer?.fullname || "Buyer"} (Both Logged In)
+                {buyer?.fullname || "Buyer"} 
               </Text>
             </View>
           </View>
 
           <Text style={styles.switchTitle}>Switch Account</Text>
 
-          <TouchableOpacity
-            style={[styles.switchButton, { backgroundColor: "#16A34A" }]}
-            onPress={() => {
-              toggleSidebar();
-              navigation.navigate("BuyerDashboardScreen", {
-                selectedTab: "Profile",
-              });
-            }}
-          >
-            <Icon name="cart-outline" size={22} color="#fff" />
-            <Text style={styles.switchText}>Switch to Buyer Dashboard</Text>
-          </TouchableOpacity>
+         {/* Buyer Dashboard Button */}
+      <TouchableOpacity
+        style={styles.imageButton}
+        onPress={() => {
+          toggleSidebar();
+          navigation.navigate("BuyerDashboardScreen", { selectedTab: "Profile" });
+        }}
+        activeOpacity={0.85}
+      >
+        <Image
+          source={require("../assets/buyercard.png")} // 🖼 your full design image
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.switchButton, { backgroundColor: "#9333EA" }]}
-            onPress={() => {
-              toggleSidebar();
-              navigation.navigate("DashboardScreen", {
-                selectedTab: "Dashboard",
-              });
-            }}
-          >
-            <Icon name="store-outline" size={22} color="#fff" />
-            <Text style={styles.switchText}>Switch to Seller Dashboard</Text>
-          </TouchableOpacity>
-
+      {/* Seller Dashboard Button */}
+      <TouchableOpacity
+        style={styles.imageButton}
+        onPress={() => {
+          toggleSidebar();
+          navigation.navigate("DashboardScreen", { selectedTab: "Dashboard" });
+        }}
+        activeOpacity={0.85}
+      >
+        <Image
+          source={require("../assets/sellercard.png")} // 🖼 your full design image
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
           <View style={styles.divider} />
 
           <TouchableOpacity
@@ -445,8 +450,22 @@ const styles = StyleSheet.create({
   arrow: { color: "#666", fontSize: 14, marginLeft: 5 },
   welcome: { color: "#444", fontSize: 18, fontWeight: "700", marginBottom: 20 },
   switchTitle: { fontSize: 16, fontWeight: "600", color: "#374151", marginTop: 10, marginBottom: 12, textAlign: "center" },
-  switchButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 14, borderRadius: 12, marginBottom: 15, shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, elevation: 4 },
-  switchText: { color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 10 },
-});
+image: {
+  width: "100%",  // 🔥 make full width
+  height: 120,    // adjust as per image ratio
+  borderRadius: 15,
+},
+  imageButton: {
+    marginBottom: 20,
+    borderRadius: 15,
+    overflow: "hidden",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    backgroundColor: "#fff",
+  },
+    switchText: { color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 10 },
+  });
 
 export default Sidebar;

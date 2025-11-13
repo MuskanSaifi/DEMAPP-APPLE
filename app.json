@@ -2,7 +2,7 @@
   "expo": {
     "name": "DialExportMart",
     "slug": "dial-export-mart",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/New_icon.png",
     "userInterfaceStyle": "light",
@@ -19,7 +19,7 @@
       "supportsTablet": true,
       "icon": "./assets/New_icon.png",
       "bundleIdentifier": "com.innodem.dalexportmart",
-      "buildNumber": "13", 
+      "buildNumber": "15", 
        "jsEngine": "jsc",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  Platform
 } from "react-native";
 import axios from "axios";
 
@@ -84,25 +85,33 @@ const BannerSlider = ({ navigation }) => {
             activeOpacity={0.8}
             onPress={() => handleBannerClick(item.link)}
           >
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={{ width: width, height: width * aspectRatio }}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item._id || item.id}
-        showsHorizontalScrollIndicator={false}
-        pagingEnabled
-        snapToInterval={width}
-        decelerationRate="fast"
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={{ width: width, height: width * aspectRatio }}
+        resizeMode="cover"
       />
+    </TouchableOpacity>
+  )}
+  keyExtractor={(item) => item._id || item.id}
+  showsHorizontalScrollIndicator={false}
+  pagingEnabled
+  snapToInterval={width}
+  decelerationRate="fast"
+  disableIntervalMomentum   // ✅ smooth scroll on Android
+  removeClippedSubviews={false}  // ✅ prevents clipping issue
+  automaticallyAdjustContentInsets={false} // ✅ ensures equal margin behavior
+  contentContainerStyle={{ paddingTop: 0 }} // ✅ aligns top properly
+/>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
- 
+  wrapper: {
+  marginTop: Platform.OS === "android" ? 45 : 1, // ✅ balance top spacing
+  overflow: "hidden",
+},
+
   loader: {
     alignItems: "center",
     justifyContent: "center",

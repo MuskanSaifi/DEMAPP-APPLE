@@ -172,7 +172,7 @@ export default function ProductDetailScreen() {
 
       if (!authToken || !authRole)
         return Alert.alert("Login Required", "Please log in first.", [
-          { text: "OK", onPress: () => navigation.navigate("Login") },
+          { text: "OK", onPress: () => navigation.navigate("BuySell") },
         ]);
 
       Alert.alert("Block Seller", "Are you sure you want to block this seller?", [
@@ -216,7 +216,7 @@ export default function ProductDetailScreen() {
       Alert.alert(
         "Login Required",
         "Please log in first to report this seller.",
-        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+        [{ text: "OK", onPress: () => navigation.navigate("BuySell") }]
       );
       return;
     }
@@ -269,7 +269,7 @@ export default function ProductDetailScreen() {
   const handleWishlistToggle = () => {
     if (!user && !buyer)
       return Alert.alert("Login Required", "Please login to manage wishlist.", [
-        { text: "OK", onPress: () => navigation.navigate("Login") },
+        { text: "OK", onPress: () => navigation.navigate("BuySell") },
       ]);
 
     isProductInWishlist
@@ -785,7 +785,6 @@ const styles = StyleSheet.create({
   flexDirection: "row",
   justifyContent: "flex-end",
   alignItems: "center",
-  marginBottom: 10,
   gap: 10, // space between icons
 },
 
@@ -910,10 +909,14 @@ blockButton: {
     fontWeight: '500',
     color: '#0288d1', // Corresponds to blue-700
   },
+  scrollViewContent: {
+    marginTop: Platform.OS === "ios" ? 10 : 40,
+  },
+
   productCard: {
     backgroundColor: '#fff',
     borderRadius: 20,
-    marginTop: 55,
+    marginTop: 5,
     padding: 15,
     shadowRadius: 4,
     elevation: 3,
@@ -963,13 +966,12 @@ blockButton: {
   },
   infoSection: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 1,
   },
   productName: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#1a202c', // Corresponds to gray-900
-    marginBottom: 5,
   },
   metaInfo: {
     flexDirection: 'row',
@@ -1146,27 +1148,24 @@ tableCellValue: {
   },
   buyFromContainer: {
     borderTopWidth: 1,
-    marginTop:12,
+    marginTop:8,
     borderTopColor: '#e2e8f0',
   },
   relatedSection: {
     backgroundColor: '#fff',
     borderRadius: 20,
     marginHorizontal: 15,
-    marginTop: 20, 
   },
   relatedSectionTitle: {
     fontWeight: 'bold',
   fontSize: 14,
-  marginTop: 15,
+  marginTop: 10,
   marginBottom: 8,
   color: '#333',
   },
-  relatedProductsScroll: {
-    paddingBottom: 10, // Gives some space for horizontal scroll
-  },
+  
   relatedProductCard: {
-    width: width * 0.46, // Adjust width for horizontal scroll
+    width: width * 0.50, // Adjust width for horizontal scroll
     marginRight: 10,
     borderWidth: 1,
     borderColor: '#e2e8f0',
@@ -1176,7 +1175,7 @@ tableCellValue: {
   },
   relatedProductImageContainer: {
     width: '100%',
-    height: 180,
+    height: 160,
     backgroundColor: '#f7fafc',
     justifyContent: 'center',
     alignItems: 'center',

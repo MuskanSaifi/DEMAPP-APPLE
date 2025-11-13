@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   StatusBar,
+  Image,
 } from "react-native";
 import NetInfo from "@react-native-community/netinfo";
 import { Provider } from "react-redux";
@@ -36,14 +37,23 @@ function MainApp() {
   const { isLoading: userLoading } = useContext(require("./context/AuthContext").AuthContext);
   const { isLoading: buyerLoading } = useContext(BuyerAuthContext);
 
-  if (userLoading || buyerLoading) {
-    return (
-      <View style={loadingStyles.container}>
-        <ActivityIndicator size="large" color="#007bff" />
-        <Text style={loadingStyles.text}>Loading user session...</Text>
-      </View>
-    );
-  }
+if (userLoading || buyerLoading) {
+  return (
+    <View style={[loadingStyles.container, { backgroundColor: "#f8fafc" }]}>
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+      <Image
+        source={require("./assets/New_icon.png")} // your app logo
+        style={{ width: 100, height: 100, marginBottom: 20 }}
+        resizeMode="contain"
+      />
+      <ActivityIndicator size="large" color="#2563EB" />
+      <Text style={[loadingStyles.text, { color: "#2563EB", marginTop: 12 }]}>
+        Loading your session...
+      </Text>
+    </View>
+  );
+}
+
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>

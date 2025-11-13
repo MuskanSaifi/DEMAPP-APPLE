@@ -67,7 +67,6 @@ const PricingPlans = () => {
         setLoading(false);
       }
     };
-
     fetchPlans();
   }, []);
 

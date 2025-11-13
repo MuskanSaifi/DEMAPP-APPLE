@@ -1,4 +1,4 @@
-import React, { useState, useContext  } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { setReduxBuyer } from "../redux/buyerSlice";
 import { useNavigation } from "@react-navigation/native";
 import { BuyerAuthContext } from "../context/BuyerAuthContext";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 export default function BuyerRegisterScreen() {
   const [fullname, setFullname] = useState("");
@@ -31,9 +32,9 @@ export default function BuyerRegisterScreen() {
   const [callingCode, setCallingCode] = useState("91");
   const [countryCode, setCountryCode] = useState("IN");
   const [loginNumber, setLoginNumber] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false); // ✅ added
 
-const { loginBuyer } = useContext(BuyerAuthContext);
-
+  const { loginBuyer } = useContext(BuyerAuthContext);
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
@@ -47,6 +48,11 @@ const { loginBuyer } = useContext(BuyerAuthContext);
   const handleSubmit = async () => {
     if (!fullname || !mobileNumber) {
       Alert.alert("Error", "Please fill all required fields");
+      return;
+    }
+
+    if (!termsAccepted) {
+      Alert.alert("Error", "Please accept Terms & Conditions before continuing");
       return;
     }
 
@@ -101,15 +107,29 @@ const { loginBuyer } = useContext(BuyerAuthContext);
         }
       );
 
-    if (res.status === 200) {
-  loginBuyer(res.data.buyer, res.data.token); // ✅ Save to AsyncStorage + Context
-  dispatch(setReduxBuyer({ buyer: res.data.buyer, token: res.data.token }));
-  navigation.reset({ index: 0, routes: [{ name: "BuyerDashboardScreen" }] });
-}
- else {
+      if (res.status === 200) {
+        const { buyer, token } = res.data;
+        loginBuyer(buyer, token);
+        dispatch(setReduxBuyer({ buyer, token }));
+
+        // ✅ Call Accept Terms API after verification
+        await axios.post(
+          "https://www.dialexportmart.com/api/buyer/accept-terms",
+          {},
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "BuyerDashboardScreen" }],
+        });
+      } else {
         setError(res.data.error || "Invalid OTP");
       }
     } catch (err) {
+      console.error("Verify OTP error:", err);
       setError(err.response?.data?.error || "Server error");
     } finally {
       setLoading(false);
@@ -177,7 +197,6 @@ const { loginBuyer } = useContext(BuyerAuthContext);
               placeholderTextColor="#666"
             />
 
-            {/* Country picker + Mobile input */}
             <View style={styles.phoneContainer}>
               <TouchableOpacity
                 style={styles.countryPickerButton}
@@ -215,19 +234,44 @@ const { loginBuyer } = useContext(BuyerAuthContext);
               placeholderTextColor="#666"
             />
 
-            <TouchableOpacity
-              style={[styles.button, loading && { opacity: 0.7 }]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Send OTP</Text>
-              )}
-            </TouchableOpacity>
+<TouchableOpacity
+  style={styles.checkboxContainer}
+  onPress={() => setTermsAccepted(!termsAccepted)}
+>
+  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+    {termsAccepted && <Icon name="check" size={14} color="#fff" />}
+  </View>
+  <Text style={styles.checkboxLabel}>
+    I accept the{" "}
+    <Text
+      style={{ color: "#2563EB", textDecorationLine: "underline" }}
+      onPress={() => navigation.navigate("BuyerTermsScreen")}
+    >
+      Terms & Conditions
+    </Text>
+  </Text>
+</TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("BuyerLoginScreen")}>
+
+      <TouchableOpacity
+  style={[
+    styles.button,
+    (!termsAccepted || loading) && { backgroundColor: "#ccc" }, // disable style
+  ]}
+  onPress={handleSubmit}
+  disabled={loading || !termsAccepted} // disable until accepted
+>
+  {loading ? (
+    <ActivityIndicator color="#fff" />
+  ) : (
+    <Text style={styles.buttonText}>Send OTP</Text>
+  )}
+</TouchableOpacity>
+
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate("BuyerLoginScreen")}
+            >
               <Text style={styles.loginLink}>
                 Already have an account?{" "}
                 <Text style={{ fontWeight: "bold" }}>Login</Text>
@@ -303,6 +347,29 @@ const styles = StyleSheet.create({
   countryPickerText: {
     fontSize: 16,
     color: "#111827",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    marginRight: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: "#333",
   },
   button: {
     backgroundColor: "#2563EB",

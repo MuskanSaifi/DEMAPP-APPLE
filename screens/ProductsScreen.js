@@ -210,7 +210,7 @@ const buyer = useSelector((state) => state.buyer.buyer);
       Alert.alert(
         "Login Required",
         "Please login first to manage your wishlist.",
-        [{ text: "OK", onPress: () => navigation.navigate("Login") }]
+        [{ text: "OK", onPress: () => navigation.navigate("BuySell") }]
       );
       return;
     }
@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: width * 0.8,
-height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
+    height: Dimensions.get('window').height + (Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0),
     zIndex: 999,
     elevation: 5,
     backgroundColor: '#fff',
@@ -632,7 +632,10 @@ productInfoCard: {
   subcategorySliderContainer: {
     backgroundColor: "#FFFFFF",
     marginHorizontal: 16,
-    marginTop: 70,
+    marginTop: Platform.select({
+      ios: 20,
+      android: 70,
+    }),
   },
   subcategorySliderTitle: {
   fontWeight: 'bold',
@@ -840,13 +843,13 @@ contactSellerButton: {
     fontWeight: "500",
     textAlign: "center",
   },
-  noRelatedProductsContainer: {
+ noRelatedProductsContainer: {
     backgroundColor: "#FFFFFF",
     marginHorizontal: 16,
     borderRadius: 12,
     padding: 15,
-    marginBottom: 20,
-    alignItems: 'center',
+    alignItems: "center",
+    marginBottom: 30,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -862,6 +865,7 @@ contactSellerButton: {
   noRelatedProductsText: {
     fontSize: 14,
     color: "#888",
+    textAlign: "center",
   },
  bottomTabsContainer: {
     position: 'absolute', // Use 'absolute' for fixed positioning
@@ -879,13 +883,18 @@ contactSellerButton: {
     shadowRadius: 8,
   },
   wishlistButton: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "#fff",
     borderRadius: 20,
-    padding: 5,
-},
+    padding: 6,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 1.5,
+  },
 
 });
 

@@ -102,31 +102,31 @@ const SubcategoryScreen = ({ route, navigation }) => {
     const fullSubcategoryData = allSubcategories.find((sub) => sub._id === item._id);
     setSelectedSubcategory(fullSubcategoryData || item);
   };
-
-  const renderSidebarItem = ({ item }) => (
-    <TouchableOpacity
+const renderSidebarItem = ({ item }) => (
+  <TouchableOpacity
+    style={[
+      styles.sidebarItem,
+      item._id === selectedSubcategory?._id && styles.activeSidebarItem,
+    ]}
+    onPress={() => handleSidebarPress(item)}
+  >
+    <Image
+      source={{ uri: item.icon || 'https://via.placeholder.com/40/C0C0C0/FFFFFF?text=Icon' }}
+      style={styles.sidebarIcon}
+      resizeMode="contain"
+    />
+    <Text
       style={[
-        styles.sidebarItem,
-        item._id === selectedSubcategory?._id && styles.activeSidebarItem,
+        styles.sidebarText,
+        item._id === selectedSubcategory?._id && styles.activeSidebarText,
       ]}
-      onPress={() => handleSidebarPress(item)}
+      numberOfLines={2}
     >
-      <Image
-        source={{ uri: item.icon || 'https://via.placeholder.com/40/C0C0C0/FFFFFF?text=Icon' }}
-        style={styles.sidebarIcon}
-        resizeMode="contain"
-      />
-      <Text
-        style={[
-          styles.sidebarText,
-          item._id === selectedSubcategory?._id && styles.activeSidebarText,
-        ]}
-        numberOfLines={2}
-      >
-        {item.name}
-      </Text>
-    </TouchableOpacity>
-  );
+      {item.name}
+    </Text>
+  </TouchableOpacity>
+);
+
 
   const renderProductItem = ({ item }) => (
     <TouchableOpacity
@@ -166,15 +166,16 @@ const SubcategoryScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       {/* Sidebar */}
-      <View style={styles.sidebar}>
-        <FlatList
-          data={allSubcategories}
-          keyExtractor={(item, index) => `${item._id || 'sidebar-item'}-${index}`}
-          renderItem={renderSidebarItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.sidebarListContent}
-        />
-      </View>
+<View style={styles.sidebar}>
+  <FlatList
+    data={allSubcategories}
+    keyExtractor={(item, index) => `${item._id || 'sidebar-item'}-${index}`}
+    renderItem={renderSidebarItem}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={styles.sidebarListContent}
+  />
+</View>
+
 
       {/* Products grid */}
       <View style={styles.productsContainer}>
@@ -236,42 +237,42 @@ const styles = StyleSheet.create({
   sidebarListContent: {
     paddingBottom: 30,
   },
-  sidebarItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F4F4F4',
-    marginVertical: 6,
-    paddingVertical: 5,
-     borderWidth: 1,
-    borderColor: '#eee',
-    paddingHorizontal: 10,
-    borderRadius: 12,
-  },
-  activeSidebarItem: {
-    backgroundColor: '#ECE3FF',
-    shadowColor: '#9A7DFF',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-  },
-  sidebarIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: '#E9E9E9',
-    marginRight: 10,
-  },
-  sidebarText: {
-    fontSize: 9,
-    color: '#444',
-    fontWeight: '500',
-  },
-  activeSidebarText: {
-    color: '#6A42FF',
-    fontWeight: '700',
-  },
-
+sidebarItem: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#F4F4F4',
+  marginVertical: 6,
+  paddingVertical: 10,
+  borderWidth: 1,
+  borderColor: '#eee',
+  paddingHorizontal: 5,
+  borderRadius: 12,
+},
+activeSidebarItem: {
+  backgroundColor: '#ECE3FF',
+  shadowColor: '#9A7DFF',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 2,
+  elevation: 3,
+},
+sidebarIcon: {
+  width: 40,
+  height: 40,
+  borderRadius: 8,
+  backgroundColor: '#E9E9E9',
+  marginBottom: 5,
+},
+sidebarText: {
+  fontSize: 10,
+  color: '#444',
+  fontWeight: '500',
+  textAlign: 'center',
+},
+activeSidebarText: {
+  color: '#6A42FF',
+  fontWeight: '700',
+},
   // Products Container
   productsContainer: {
     flex: 1,

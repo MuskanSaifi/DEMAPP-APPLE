@@ -10,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  Platform 
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSelector, useDispatch } from "react-redux";
@@ -133,7 +134,7 @@ const BuyerProfile = () => {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} >
       {/* Header Section */}
       <LinearGradient colors={["#F9FAFB", "#F9FAFB"]} style={styles.header}>
         <TouchableOpacity onPress={editMode ? handleImageUpload : null}>
@@ -158,7 +159,6 @@ const BuyerProfile = () => {
           { label: "Full Name", name: "fullname" },
           { label: "Email", name: "email" },
           { label: "Mobile Number", name: "mobileNumber" },
-          { label: "Country Code", name: "countryCode" },
           { label: "Product Interested", name: "productname" },
           { label: "Quantity", name: "quantity" },
           { label: "Unit", name: "unit" },
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginBottom: 60,
+    marginBottom: Platform.OS === "ios" ? 80 : 100, // 👈 iOS = 80, Android = 100
   },
   button: {
     flex: 0.45,
