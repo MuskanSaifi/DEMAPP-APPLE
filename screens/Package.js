@@ -53,7 +53,7 @@ const PricingPlans = () => {
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor('#F0F2F5');
     }
-
+// fgjbnfbjk
     const fetchPlans = async () => {
       try {
         const response = await fetch('https://www.dialexportmart.com/api/adminprofile/plans');
