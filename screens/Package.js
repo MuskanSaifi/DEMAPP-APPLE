@@ -11,14 +11,18 @@ import {
   Linking,
   Alert,
   ActivityIndicator,
+   Modal, TextInput 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Collapsible from 'react-native-collapsible';
+import { useSelector } from 'react-redux';
+import { useNavigation } from "@react-navigation/native";
+
 
 // --- COLLAPSIBLE SECTION COMPONENT ---
 const CollapsibleSection = ({ title, features, renderFeature }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
-
+  
   return (
     <View style={sectionStyles.container}>
       <TouchableOpacity
@@ -45,15 +49,20 @@ const CollapsibleSection = ({ title, features, renderFeature }) => {
 
 // --- MAIN PRICING PLANS COMPONENT ---
 const PricingPlans = () => {
+  const navigation = useNavigation();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [customAmount, setCustomAmount] = useState("");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const user = useSelector((state) => state.user.user);
+  
   useEffect(() => {
     StatusBar.setBarStyle('dark-content');
     if (Platform.OS === 'android') {
       StatusBar.setBackgroundColor('#F0F2F5');
     }
-// fgjbnfbjk
+
     const fetchPlans = async () => {
       try {
         const response = await fetch('https://www.dialexportmart.com/api/adminprofile/plans');
@@ -67,6 +76,7 @@ const PricingPlans = () => {
         setLoading(false);
       }
     };
+
     fetchPlans();
   }, []);
 
@@ -141,30 +151,28 @@ const PricingPlans = () => {
           <Text style={styles.gst}>+ 18% GST Per Year</Text>
         </View>
 
-        <TouchableOpacity
-          onPress={() => {
-            if (Platform.OS === 'ios') {
-              Linking.openURL(
-                'mailto:info@dialexportmart.com?subject=Membership Enquiry'
-              );
-            } else {
-              handleWhatsAppEnquiry(item);
-            }
-          }}
-          style={[styles.payButton, item.highlighted && styles.highlightedPayButton]}
-        >
-          <Text style={styles.payButtonText}>
-            {Platform.OS === 'ios' ? 'Contact Us' : 'Enquire Now'}
-          </Text>
-          {Platform.OS !== 'ios' && (
+          <TouchableOpacity
+            style={styles.payButton} // ✅ Added style
+           onPress={() => {
+  if (!user) {
+    Alert.alert("Login Required", "Please login to purchase a plan.", [
+      { text: "OK", onPress: () => navigation.navigate("Login") },
+    ]);
+    return;
+  }
+  setSelectedPlan(item);
+  setShowModal(true);
+}}
+          >
+            <Text style={styles.payButtonText}>Buy Now</Text>
             <Ionicons
-              name="logo-whatsapp"
+              name="card-outline"
               size={20}
               color="#fff"
               style={{ marginLeft: 8 }}
             />
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+
       </View>
     );
   };
@@ -209,6 +217,82 @@ const PricingPlans = () => {
         keyExtractor={(item) => item._id?.toString() || Math.random().toString()}
         showsVerticalScrollIndicator={false}
       />
+      <Modal
+  visible={showModal}
+  animationType="fade"
+  transparent
+  onRequestClose={() => {
+    setShowModal(false);
+    setCustomAmount("");
+  }}
+>
+  <View style={{
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.6)"
+  }}>
+    <View style={{
+      width: "85%",
+      backgroundColor: "#fff",
+      borderRadius: 15,
+      padding: 20
+    }}>
+      <Text style={{ fontSize: 18, fontWeight: "bold", textAlign: "center", marginBottom: 15 }}>
+        Select Payment Option for {selectedPlan?.title}
+      </Text>
+
+      <TouchableOpacity
+        style={{ backgroundColor: "#28A745", padding: 12, borderRadius: 8, marginBottom: 10 }}
+        onPress={() => {
+          setShowModal(false);
+          navigation.navigate("PaymentScreen", {
+            amount: selectedPlan.price,
+            totalAmount: selectedPlan.price * 1.18,
+            packageName: selectedPlan.title,
+          });
+        }}
+      >
+        <Text style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}>Full Amount</Text>
+      </TouchableOpacity>
+
+      <TextInput
+        placeholder="Enter custom amount"
+        keyboardType="numeric"
+        value={customAmount}
+        onChangeText={setCustomAmount}
+        style={{
+          borderWidth: 1,
+          borderColor: "#ccc",
+          borderRadius: 8,
+          paddingHorizontal: 10,
+          paddingVertical: 8,
+          marginBottom: 10
+        }}
+      />
+
+      <TouchableOpacity
+        style={{ backgroundColor: "#007BFF", padding: 12, borderRadius: 8 }}
+        onPress={() => {
+          if (!customAmount || isNaN(customAmount) || Number(customAmount) < 1) {
+            Alert.alert("Invalid", "Please enter a valid custom amount.");
+            return;
+          }
+          setShowModal(false);
+          navigation.navigate("PaymentScreen", {
+            amount: customAmount,
+            totalAmount: customAmount,
+            packageName: selectedPlan.title,
+          });
+        }}
+      >
+        <Text style={{ color: "#fff", textAlign: "center", fontWeight: "600" }}>
+          Proceed with Custom ₹{customAmount || ""}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
     </SafeAreaView>
   );
 };

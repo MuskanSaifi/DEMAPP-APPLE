@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
+        marginBottom: 40,
   },
 });
 

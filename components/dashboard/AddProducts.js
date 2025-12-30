@@ -1605,7 +1605,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
-    marginBottom: Platform.OS === "ios" ? 50 : 80, // 👈 iOS smaller, Android more
+      marginBottom: Platform.OS === "ios" ? 60 : 120, // 👈 iOS smaller, Android more
   },
   submitButtonText: {
     color: '#fff',

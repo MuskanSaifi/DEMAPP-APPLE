@@ -1,3 +1,4 @@
+// components/TopCategories.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -12,7 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
-const ITEM_WIDTH = width / 4 - 20; // Adjusted for 4 columns with some margin
+const ITEM_WIDTH = width / 4 - 15; // Adjusted for 4 columns with some margin
 
 // Define a palette of light, vibrant colors
 const CATEGORY_COLORS = [
@@ -38,10 +39,10 @@ const TopCategory = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://www.dialexportmart.com/api/adminprofile/category');
+      const response = await fetch('https://dialexportmart.com/api/home/appapi/homecategories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       const data = await response.json();
-      setCategories(data.slice(0, 8)); // Show top 8 categories
+      setCategories(data.slice(0, 4)); // Show top 8 categories
     } catch (err) {
       setError(err.message);
     } finally {
@@ -102,7 +103,7 @@ const TopCategory = () => {
       ) : (
         <FlatList
           key={'4columns'} // Key for FlatList to ensure re-render on numColumns change (though not changing here)
-          data={loading ? Array(8).fill({}) : categories} // Show 8 skeleton items while loading
+          data={loading ? Array(4).fill({}) : categories} // Show 8 skeleton items while loading
           renderItem={loading ? () => <SkeletonItem /> : renderItem}
           keyExtractor={(item, index) => item._id || `skeleton-${index}`} // Unique key for skeleton items too
           numColumns={4}
@@ -149,22 +150,19 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     // marginHorizontal removed as it's now in contentContainerStyle
   },
-item: {
-  width: ITEM_WIDTH,
-  alignItems: 'center',
-  backgroundColor: '#ffffff',
-  borderRadius: 10,
-  paddingVertical: 8,
-  paddingHorizontal: 4,
-
-  // 🌟 Balanced shadow on all sides
-  elevation: 3, // Android shadow depth
-  shadowColor: '#000',
-  shadowOpacity: 0.06, // slightly stronger for even visibility
-  shadowRadius: 6, // smoother spread
-  shadowOffset: { width: 0, height: 0 }, // 👈 makes it equal on all sides
-},
-
+  item: {
+    width: ITEM_WIDTH,
+    alignItems: 'center',
+    backgroundColor: '#ffffff', // Keep item background white
+    borderRadius: 10,
+    paddingVertical: 8, // Increased padding for better appearance
+    paddingHorizontal: 4,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.08, // Slightly less opaque shadow
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
   iconWrapper: {
     // backgroundColor will be set dynamically inline
     borderRadius: 25, // Circular background

@@ -455,17 +455,18 @@ image: {
   height: 120,    // adjust as per image ratio
   borderRadius: 15,
 },
-  imageButton: {
-    marginBottom: 20,
-    borderRadius: 15,
-    overflow: "hidden",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    backgroundColor: "#fff",
-  },
-    switchText: { color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 10 },
-  });
+imageButton: {
+  marginBottom: 20,
+  borderRadius: 15,
+  overflow: "hidden",
+  elevation: 5,
+  shadowColor: "#000",
+  shadowOpacity: 0.2,
+  shadowRadius: 5,
+  backgroundColor: "#fff",
+},
+
+  switchText: { color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 10 },
+});
 
 export default Sidebar;

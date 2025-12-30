@@ -13,11 +13,12 @@ import SearchBarWithSuggestions from '../components/SearchBar';
 import BannerSlider from '../components/BannerSlider';
 import TopCategory from '../components/TopCategories';
 import BottomTabs from '../components/BottomTabs';
-import ProductSections from '../components/ProductSections';
 import BottomAdd from '../components/BottomAdd';
 import Sidebar from '../components/Sidebar';
 import Frames from '../components/Frames';
 import Packages from '../components/Packages';
+import HomeProducts from '../components/HomeProducts';
+import Cities from '../components/Cities';
 
 const { width } = Dimensions.get('window');
 
@@ -40,10 +41,9 @@ const HomeScreen = ({ navigation }) => {
   const renderContent = () => [
     <BannerSlider key="banner" />,
     <TopCategory key="topcategory" />,
+    <HomeProducts key="homeproducts" />,   // ✅ ADD THIS
+    <Cities key="cities" />,
     <Frames key="Frames"/>,
-    <ProductSections key="productsections1" tag="trending" Name="Trending" />,
-    <ProductSections key="productsections2" tag="diwaliOffer" Name="Featured Products" />,
-    <ProductSections key="productsections3" tag="holiOffer" Name="Products You May Like" />,
     <Packages key="Packages" />,
     <BottomAdd key="bottomadd" />,
   ];
@@ -65,10 +65,12 @@ const HomeScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={toggleSidebar} />
       )}
 
+
       {/* Search Bar */}
       <View style={styles.searchBarWrapper}>
         <SearchBarWithSuggestions toggleSidebar={toggleSidebar} />
       </View>
+      
 
       {/* Scrollable Content */}
       <FlatList
@@ -79,6 +81,7 @@ const HomeScreen = ({ navigation }) => {
         contentContainerStyle={{ paddingTop: 8 }}
         style={styles.content}
       />
+
 
       {/* Bottom Tabs */}
       <View style={styles.bottomTabsContainer}>

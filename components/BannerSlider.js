@@ -22,13 +22,12 @@ const BannerSlider = ({ navigation }) => {
   // 🧠 Fetch banners from backend
   const fetchBanners = async () => {
     try {
-      const res = await axios.get("https://www.dialexportmart.com/api/adminprofile/banner");
+      const res = await axios.get(
+        "https://www.dialexportmart.com/api/adminprofile/banner?platform=app"
+      );
+  
       if (res.data.success) {
-        // Filter only active app banners
-        const filtered = res.data.banners.filter(
-          (b) => b.isActive && (b.platform === "app" || b.platform === "both")
-        );
-        setBanners(filtered);
+        setBanners(res.data.banners);
       }
     } catch (error) {
       console.error("Failed to load banners:", error.message);
@@ -36,6 +35,7 @@ const BannerSlider = ({ navigation }) => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchBanners();
@@ -78,13 +78,13 @@ const BannerSlider = ({ navigation }) => {
   return (
     <View style={styles.wrapper}>
       <FlatList
-        horizontal
-        data={banners}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => handleBannerClick(item.link)}
-          >
+  horizontal
+  data={banners}
+  renderItem={({ item }) => (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => handleBannerClick(item.link)}
+    >
       <Image
         source={{ uri: item.imageUrl }}
         style={{ width: width, height: width * aspectRatio }}
@@ -102,6 +102,7 @@ const BannerSlider = ({ navigation }) => {
   automaticallyAdjustContentInsets={false} // ✅ ensures equal margin behavior
   contentContainerStyle={{ paddingTop: 0 }} // ✅ aligns top properly
 />
+
     </View>
   );
 };

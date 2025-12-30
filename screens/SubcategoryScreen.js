@@ -102,6 +102,7 @@ const SubcategoryScreen = ({ route, navigation }) => {
     const fullSubcategoryData = allSubcategories.find((sub) => sub._id === item._id);
     setSelectedSubcategory(fullSubcategoryData || item);
   };
+  
 const renderSidebarItem = ({ item }) => (
   <TouchableOpacity
     style={[
@@ -198,6 +199,8 @@ const renderSidebarItem = ({ item }) => (
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -328,6 +331,5 @@ activeSidebarText: {
   },
   
 });
-
 
 export default SubcategoryScreen;

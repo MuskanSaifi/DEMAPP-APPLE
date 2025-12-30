@@ -22,7 +22,7 @@ const AllCategoriesScreen = ({ navigation }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://www.dialexportmart.com/api/adminprofile/category');
+      const response = await fetch('https://dialexportmart.com/api/home/appapi/homecategories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       const data = await response.json();
       setCategories(Array.isArray(data) ? data : []);

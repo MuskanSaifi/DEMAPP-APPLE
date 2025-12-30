@@ -97,21 +97,30 @@ const buyer = useSelector((state) => state.buyer.buyer);
     Keyboard.dismiss();
   };
 
-  const handleSelectSuggestion = (productslug, name) => {
-    setSearchTerm(name);
-    setShowSuggestions(false);
-    Keyboard.dismiss();
-    navigation.navigate('ProductsScreen', { productslug });
-  };
+const handleSelectSuggestion = (productslug, name) => {
+  Keyboard.dismiss();
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.suggestionItem}
-      onPress={() => handleSelectSuggestion(item.productslug, item.name)}
-    >
-      <Text style={styles.suggestionText}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  setTimeout(() => {
+    setSearchTerm('');
+    setShowSuggestions(false);
+
+    navigation.navigate('ProductsScreen', {
+      productslug,
+    });
+  }, 100);
+};
+
+
+const renderItem = ({ item }) => (
+  <TouchableOpacity
+    activeOpacity={0.7}
+    onPress={() => handleSelectSuggestion(item.productslug, item.name)}
+    style={styles.suggestionItem}
+  >
+    <Text style={styles.suggestionText}>{item.name}</Text>
+  </TouchableOpacity>
+);
+
 
   return (
 <SafeAreaView style={styles.wrapper} edges={['left', 'right']}>
@@ -130,7 +139,6 @@ const buyer = useSelector((state) => state.buyer.buyer);
             value={searchTerm}
             onChangeText={setSearchTerm}
             onFocus={() => setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           />
           {searchTerm.length > 0 && (
             <TouchableOpacity onPress={clearSearch} style={styles.clearIcon}>
@@ -209,12 +217,13 @@ const buyer = useSelector((state) => state.buyer.buyer);
       {showSuggestions && (
         <View style={styles.suggestionList}>
           {suggestions.length > 0 ? (
-            <FlatList
-              data={suggestions}
-              keyExtractor={(item) => item._id}
-              renderItem={renderItem}
-              keyboardShouldPersistTaps="handled"
-            />
+           <FlatList
+  data={suggestions}
+  keyExtractor={(item) => item._id}
+  renderItem={renderItem}
+  keyboardShouldPersistTaps="always"
+  contentContainerStyle={{ paddingBottom: 10 }}
+/>
           ) : (
             !loading && searchTerm.length > 0 && (
               <Text style={styles.noProductsText}>No products found.</Text>

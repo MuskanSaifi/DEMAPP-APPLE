@@ -29,6 +29,7 @@ import BuySell from '../screens/BuySell';
 import HelpDeskScreen from '../screens/HelpSupport';
 import RoleSelectionScreen from '../screens/RoleSelectionScreen';
 import BuyerTermsScreen from '../screens/BuyerTermsScreen';
+import CityProductsScreen from '../screens/CityProductsScreen';
 
 const Stack = createNativeStackNavigator();
 export default function AppNavigator() {
@@ -92,6 +93,11 @@ return (
       component={ProductDetailScreen}
       options={{ headerShown: false }}
     />
+    <Stack.Screen
+  name="CityProducts"
+  component={CityProductsScreen}
+/>
+
     <Stack.Screen
       name="PaymentSuccessScreen"
       component={PaymentSuccessScreen}
